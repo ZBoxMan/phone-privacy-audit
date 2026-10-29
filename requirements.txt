@@ -1,0 +1,2 @@
+# iPhone 采集需要（安卓 / 鸿蒙只用 adb / hdc，不需要装这个）
+pymobiledevice3>=11.47.0

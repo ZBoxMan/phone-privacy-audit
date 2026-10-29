@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手机体检 · 插上线，看清手机里谁在动你的东西</title>
+<meta name="description" content="一套跑在电脑上的只读检查脚本。连上安卓、鸿蒙或 iPhone，跑几条命令，出一份能看懂的 HTML 报告。只诊断，不代劳。">
+<style>
+:root{
+  --bg:#0f1216; --card:#181c22; --card2:#1f242c; --line:#2c333d;
+  --text:#eef2f6; --muted:#94a1ae; --dim:#6f7d8a;
+  --red:#ff6b6b; --amber:#f0b43c; --blue:#5aa9ff; --green:#4ecb71;
+  --r:16px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,"Cascadia Code",Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:17px; line-height:1.72; -webkit-font-smoothing:antialiased;
+  padding-bottom:60px;
+}
+svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic{width:20px;height:20px;flex-shrink:0}
+a{color:var(--blue)}
+.wrap{max-width:980px;margin:0 auto;padding:0 18px}
+
+/* 标题断行均衡，避免最后只剩一个字 */
+h1,h2,h3{text-wrap:balance}
+
+/* ───────── 顶栏 ───────── */
+.nav{position:sticky;top:0;z-index:30;background:rgba(15,18,22,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:.01em;white-space:nowrap}
+.brand svg{width:21px;height:21px;color:var(--blue)}
+.nav-links{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.nav-links a{font-size:15px;color:var(--muted);text-decoration:none;padding:4px 9px;border-radius:8px;white-space:nowrap}
+.nav-links a:hover{color:var(--text);background:var(--card2)}
+
+/* ───────── 首屏 ───────── */
+.hero{padding:44px 0 8px}
+.eyebrow{font-size:14.5px;color:var(--dim);letter-spacing:.09em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eyebrow i{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block}
+h1{font-size:clamp(27px,6.2vw,45px);line-height:1.26;letter-spacing:-.025em;font-weight:800;margin:14px 0 16px}
+.lede{font-size:18px;line-height:1.75;color:#c3ced9;max-width:32em}
+.lede b{color:var(--text);font-weight:650}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.tag{display:inline-flex;align-items:center;gap:7px;font-size:15px;padding:7px 13px 7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:#c8d3de}
+.tag svg{width:16px;height:16px;stroke-width:2}
+.tag.t1{color:#9fd4ac;border-color:rgba(78,203,113,.3);background:rgba(78,203,113,.07)}
+.tag.t2{color:#f5c563;border-color:rgba(240,180,60,.3);background:rgba(240,180,60,.07)}
+.tag.t3{color:#8cc4ff;border-color:rgba(90,169,255,.3);background:rgba(90,169,255,.07)}
+.hero-grid{display:grid;gap:26px;align-items:center}
+.art-wrap{padding:0}
+.art{width:100%;max-width:520px;height:auto;display:block;margin:0 auto}
+.art .ln{stroke:#46515d;stroke-width:2}
+.art .soft{stroke:#333d47;stroke-width:1.7}
+.art .acc{stroke:#5aa9ff;stroke-width:2}
+.art .blue{stroke:#5aa9ff;fill:#5aa9ff;stroke-width:2}
+.art .red{stroke:#ff6b6b;fill:#ff6b6b;stroke-width:2}
+.art .amber{stroke:#f0b43c;fill:rgba(240,180,60,.35);stroke-width:0}
+.art .greyfill{stroke:#2c333d;fill:#2c333d;stroke-width:0}
+.art text{fill:#7d8b99;stroke:none;font-size:14px;font-family:inherit;letter-spacing:.02em}
+
+/* ───────── 区块通用 ───────── */
+section{padding-top:56px;scroll-margin-top:64px}
+.sec-head{display:flex;gap:13px;align-items:flex-start;margin-bottom:20px}
+.sec-num{width:34px;height:34px;border-radius:10px;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:3px;letter-spacing:.02em}
+.sec-head h2{font-size:clamp(23px,4.4vw,29px);line-height:1.32;letter-spacing:-.02em;font-weight:750}
+.sec-sub{font-size:16px;color:var(--muted);margin-top:5px;line-height:1.65}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.mono{font-family:var(--mono);font-size:14px;color:#8b9aa8;white-space:nowrap}
+
+/* ───────── 能 / 不能 ───────── */
+.split{display:grid;gap:12px}
+.col{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 20px 6px}
+.col.can{border-top:3px solid rgba(78,203,113,.55)}
+.col.cant{border-top:3px solid rgba(255,107,107,.42)}
+.col-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.col-head svg{width:22px;height:22px;stroke-width:2}
+.col.can .col-head{color:#7fe09a}
+.col.cant .col-head{color:#ff9c9c}
+.col-head b{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.li{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:17px;line-height:1.62;color:#c8d3de}
+.li:last-child{border-bottom:none}
+.li svg{width:18px;height:18px;margin-top:5px;stroke-width:2.2}
+.col.can .li svg{color:#6fdd8d}
+.col.cant .li svg{color:#8a6e6e}
+
+/* ───────── 三步 ───────── */
+.steps{display:grid;gap:12px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px}
+.step-top{display:flex;align-items:center;gap:11px}
+.step-ico{width:38px;height:38px;border-radius:11px;background:rgba(90,169,255,.1);color:#8cc4ff;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(90,169,255,.18)}
+.step-ico svg{width:20px;height:20px}
+.step-k{font-size:12.5px;font-weight:700;letter-spacing:.12em;color:var(--dim);line-height:1.2}
+.step-t{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.step p{font-size:17px;color:#c3ced9;line-height:1.68}
+.step-note{font-size:14.5px;color:var(--muted);line-height:1.65}
+
+/* ───────── 代码块 ───────── */
+.code{background:#0a0d12;border:1px solid #272f39;border-radius:12px;overflow:hidden;margin-top:2px}
+.code-top{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #232a33;background:#12161c}
+.dots{display:flex;gap:5px}
+.dots i{width:8px;height:8px;border-radius:50%;background:#39424d;display:block}
+.code-top b{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.05em}
+pre{margin:0;padding:13px 14px;font-family:var(--mono);font-size:14px;line-height:1.9;color:#d8e3ee;
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;-webkit-user-select:text;user-select:text;tab-size:2}
+pre .c{color:#657382}
+pre .k{color:#8cc4ff}
+pre .p{color:#f5c563}
+.code-foot{display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-top:1px solid #232a33;background:#11151a;font-size:13.5px;color:#7f8d9a;line-height:1.6}
+.code-foot svg{width:14px;height:14px;margin-top:3px;stroke-width:2}
+
+/* ───────── 平台对照 ───────── */
+.mx{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.mx-row{display:grid;grid-template-columns:minmax(0,1.7fr) repeat(4,minmax(0,1fr));align-items:center;border-top:1px solid rgba(255,255,255,.055);padding:0 12px}
+.mx-row:first-child{border-top:none;background:var(--card2)}
+.mx-label{font-size:14.5px;color:#c8d3de;padding:11px 0;line-height:1.42;padding-right:6px}
+.mx-col{font-size:12px;font-weight:700;color:var(--muted);text-align:center;padding:10px 0;letter-spacing:.02em;line-height:1.35}
+.mx-col .s{display:none}
+.mx-cell{display:flex;justify-content:center;padding:11px 0}
+.chip{width:24px;height:24px;border-radius:8px;display:grid;place-items:center}
+.chip svg{width:14px;height:14px;stroke-width:2.8}
+.chip.full{background:rgba(78,203,113,.14);color:#6fdd8d}
+.chip.part{background:rgba(240,180,60,.14);color:#f5c563}
+.chip.none{background:#232a33;color:#5f6b77}
+.chip.txt{width:auto;height:23px;padding:0 9px;font-size:12px;font-weight:700;letter-spacing:.02em;background:rgba(240,180,60,.14);color:#f5c563;border:1px solid rgba(240,180,60,.3)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:14px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend .chip{width:18px;height:18px;border-radius:6px}
+.legend .chip svg{width:11px;height:11px}
+
+/* ───────── 提示块 ───────── */
+.callout{display:flex;gap:14px;border-radius:14px;padding:18px;margin-top:16px;border:1px solid var(--line);background:var(--card)}
+.callout .co-ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.callout .co-ico svg{width:19px;height:19px;stroke-width:2.2}
+.callout h4{font-size:17px;font-weight:700;line-height:1.42;margin-bottom:4px}
+.callout p{font-size:16.5px;line-height:1.68;color:#c3ced9}
+.callout p + p{margin-top:6px}
+.callout.warn{border-color:rgba(255,107,107,.34);background:linear-gradient(160deg,rgba(255,107,107,.09),rgba(255,107,107,.02))}
+.callout.warn .co-ico{background:rgba(255,107,107,.16);color:#ff9c9c}
+.callout.warn h4{color:#ffb3b3}
+.callout.amber{border-color:rgba(240,180,60,.32);background:linear-gradient(160deg,rgba(240,180,60,.09),rgba(240,180,60,.02))}
+.callout.amber .co-ico{background:rgba(240,180,60,.15);color:#f5c563}
+.callout.amber h4{color:#f7cc80}
+.callout.info{border-color:rgba(90,169,255,.28);background:linear-gradient(160deg,rgba(90,169,255,.08),rgba(90,169,255,.02))}
+.callout.info .co-ico{background:rgba(90,169,255,.14);color:#8cc4ff}
+.callout.info h4{color:#a9d2ff}
+
+/* ───────── iPhone ───────── */
+.mini3{display:grid;gap:10px}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px}
+.mini .mi{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.mini svg{width:19px;height:19px;color:#8cc4ff;stroke-width:2}
+.mini b{font-size:16.5px;font-weight:650;line-height:1.35}
+.mini p{font-size:15px;color:var(--muted);line-height:1.6}
+
+.only2{display:grid;gap:10px;margin-top:12px}
+.only2 .o{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:15px 16px;display:flex;gap:12px;align-items:flex-start}
+.only2 .o svg{width:22px;height:22px;color:#8cc4ff;margin-top:2px}
+.only2 .o b{display:block;font-size:16.5px;font-weight:650;line-height:1.4}
+.only2 .o span{font-size:14.5px;color:var(--muted);line-height:1.6}
+.gap-line{display:flex;align-items:center;gap:12px;margin:16px 0 4px;color:var(--dim);font-size:15px}
+.gap-line::before,.gap-line::after{content:"";height:1px;background:var(--line);flex:1}
+
+.chks{display:grid;gap:11px;margin-top:16px}
+.chk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;display:flex;flex-direction:column;gap:9px}
+.chk.hot{border-color:rgba(240,180,60,.34);background:linear-gradient(165deg,rgba(240,180,60,.07),rgba(24,28,34,0))}
+.chk-top{display:flex;align-items:center;gap:10px}
+.chk-n{width:25px;height:25px;border-radius:8px;background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:700;display:grid;place-items:center;flex-shrink:0;font-family:var(--mono)}
+.chk-ico{width:30px;height:30px;border-radius:9px;background:rgba(90,169,255,.1);color:#8cc4ff;display:grid;place-items:center;flex-shrink:0}
+.chk.hot .chk-ico{background:rgba(240,180,60,.13);color:#f5c563}
+.chk-ico svg{width:17px;height:17px}
+.chk h4{font-size:17px;font-weight:650;line-height:1.36;letter-spacing:-.005em}
+.path{font-family:var(--mono);font-size:13px;color:#93a2b0;background:#12171d;border:1px solid #252d37;border-radius:8px;padding:8px 10px;line-height:1.7;word-break:break-word}
+.kv{display:flex;gap:8px;align-items:flex-start;font-size:16px;line-height:1.6;color:#c3ced9}
+.kv b{flex-shrink:0;font-size:12px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:3px;letter-spacing:.04em;white-space:nowrap}
+.kv.bad b{background:rgba(255,107,107,.14);color:#ffa3a3}
+.kv.how b{background:rgba(78,203,113,.13);color:#7fe09a}
+
+/* ───────── 安卓 / 鸿蒙 ───────── */
+.flow{display:grid;gap:9px}
+.fstep{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;display:flex;gap:11px;align-items:flex-start}
+.fstep .fn{width:22px;height:22px;border-radius:7px;background:#2a323c;color:#a5b3c1;font-size:12px;font-weight:700;display:grid;place-items:center;flex-shrink:0;margin-top:2px;font-family:var(--mono)}
+.fstep b{display:block;font-size:16px;font-weight:650;line-height:1.42}
+.fstep span{font-size:14px;color:var(--dim);line-height:1.55}
+
+.vend{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:12px}
+.vrow{display:grid;gap:3px;padding:13px 16px;border-top:1px solid rgba(255,255,255,.055)}
+.vrow:first-child{border-top:none}
+.vname{font-size:16px;font-weight:650;display:flex;align-items:center;gap:8px;line-height:1.42}
+.vname i{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:block}
+.vdesc{font-size:15px;color:#bcc7d2;line-height:1.65}
+
+.fix{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 16px;margin-top:12px}
+.fix .r{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:16px;line-height:1.62;color:#c8d3de}
+.fix .r:last-child{border-bottom:none}
+.fix .r svg{width:17px;height:17px;color:var(--amber);margin-top:4px}
+
+/* ───────── 常见问题 ───────── */
+details{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.faqs{display:grid;gap:9px}
+summary{list-style:none;cursor:pointer;padding:16px 46px 16px 17px;font-size:17px;font-weight:600;position:relative;color:#e3ebf3;line-height:1.5}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";position:absolute;right:19px;top:50%;width:8px;height:8px;border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);transform:translateY(-68%) rotate(45deg);transition:transform .18s}
+details[open] summary::after{transform:translateY(-28%) rotate(-135deg)}
+details[open] summary{color:#fff}
+.faq-b{padding:0 17px 17px;font-size:17px;color:#c3ced9;line-height:1.74}
+.faq-b b{color:#e8eef4;font-weight:650}
+.faq-b .mono{font-size:14px}
+
+/* ───────── 底线 ───────── */
+.bottom{display:grid;gap:11px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px}
+.bcard svg{width:22px;height:22px;margin-bottom:9px;color:#8cc4ff}
+.bcard b{display:block;font-size:17px;font-weight:700;margin-bottom:3px;line-height:1.4}
+.bcard p{font-size:15px;color:var(--muted);line-height:1.65}
+
+footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);color:var(--dim);font-size:14px;line-height:1.9}
+footer b{color:var(--muted);font-weight:600}
+.foot-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:13px;color:#5d6a77}
+.foot-meta span{display:inline-flex;align-items:center;gap:6px}
+.foot-meta span+span::before{content:"";width:3px;height:3px;border-radius:50%;background:#3d4753}
+
+/* ───────── 样例报告 ───────── */
+.demos{display:grid;gap:12px;margin-top:18px}
+.dcard{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:border-color .18s,transform .18s}
+.dcard:hover{border-color:#3d4a58;transform:translateY(-2px)}
+.dcard-top{display:flex;align-items:flex-start;gap:11px;padding:16px 17px 12px}
+.dcard-ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex-shrink:0}
+.dcard-ico.a{background:rgba(78,203,113,.12);color:#7fe09a}
+.dcard-ico.i{background:rgba(90,169,255,.12);color:#8cc4ff}
+.dcard-ico svg{width:20px;height:20px}
+.dcard-t{font-size:17.5px;font-weight:700;line-height:1.34}
+.dcard-s{font-size:14.5px;color:var(--muted);line-height:1.5;margin-top:3px}
+
+/* 报告预览：把真实报告里的分布条和软件行缩成一个小样 */
+.pv{background:#12161b;border-top:1px solid rgba(255,255,255,.055);border-bottom:1px solid rgba(255,255,255,.055);padding:13px 15px;display:grid;gap:8px}
+.pv-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:#1b2027}
+.pv-bar i{display:block;box-shadow:inset -2px 0 0 #12161b}
+.pv-bar i.r{background:#ff6b6b}
+.pv-bar i.y{background:#f0b43c}
+.pv-bar i.b{background:#5aa9ff}
+.pv-bar i.g{background:#3f9e5c}
+.pv-row{display:flex;align-items:center;gap:8px;min-width:0}
+.pv-ico{width:19px;height:19px;border-radius:6px;background:#242c35;color:#93a2b0;font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.pv-row code{font-family:var(--mono);font-size:12px;color:#9dabba;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.pv-row em{font-size:11px;font-style:normal;font-weight:700;padding:1px 6px;border-radius:4px;flex-shrink:0}
+.pv-row em.hi{background:rgba(255,107,107,.16);color:#ffa3a3}
+.pv-row em.mid{background:rgba(240,180,60,.16);color:#f5c563}
+.dcard-go{display:flex;align-items:center;gap:7px;padding:12px 17px;font-size:15px;font-weight:650;color:#8cc4ff;margin-top:auto}
+.dcard-go svg{width:16px;height:16px}
+.demo-note{font-size:14px;color:var(--dim);line-height:1.65;margin-top:12px}
+
+/* ───────── 响应式 ───────── */
+@media(min-width:700px){
+  .split{grid-template-columns:1fr 1fr;gap:14px}
+  .demos{grid-template-columns:1fr 1fr;gap:14px}
+  .faqs{grid-template-columns:1fr 1fr;align-items:start}
+  .mini3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .only2{grid-template-columns:1fr 1fr}
+  .chks{grid-template-columns:1fr 1fr}
+  .bottom{grid-template-columns:1fr 1fr}
+  .vrow{grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:baseline;padding:14px 18px}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mx-row{padding:0 18px}
+  .mx-label{font-size:16px;padding:14px 0}
+  .mx-col{font-size:13px;padding:12px 0}
+  .mx-cell{padding:14px 0}
+  pre{font-size:14.5px}
+}
+@media(min-width:960px){
+  .hero{padding:60px 0 4px}
+  .hero-grid{grid-template-columns:1.12fr .88fr;gap:34px}
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .flow{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .bottom{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .mx-col .f{display:none}
+  .mx-col .s{display:inline}
+  .mx-label{font-size:13.5px;line-height:1.45}
+  .chk{padding:15px}
+  .hero{padding-top:34px}
+  .nav-links a{padding:4px 7px;font-size:14.5px}
+  .nav-links a.hide-s{display:none}
+  .nav-in{padding:8px 18px;gap:2px 10px}
+  .nav-links{gap:0}
+  section{scroll-margin-top:66px}
+}
+@media(max-width:400px){
+  .wrap,.nav-in{padding-left:14px;padding-right:14px}
+  .mx-row{padding:0 9px}
+  .mx-label{font-size:13.5px}
+  .chk h4{font-size:16.5px}
+}
+@media(max-width:620px){
+  /* 窄屏导航不换行；更窄时只留三个入口，其余靠滚动 */
+  .nav-in{flex-wrap:nowrap}
+  .nav-links{
+    flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;
+    scrollbar-width:none;-ms-overflow-style:none;
+  }
+  .nav-links::-webkit-scrollbar{display:none}
+}
+@media(max-width:400px){
+  /* 不藏入口，改成压缩间距：安卓是这个工具的主场景，小屏上也必须点得到 */
+  .nav-links a{padding:4px 5px;font-size:14px}
+}
+@media(max-width:345px){
+  /* 320 一级的极小屏放不下四项，FAQ 本来就在页面最后，先去它 */
+  .nav-links a:nth-child(6){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- 图标库 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.6 12S6.2 6.2 12 6.2 21.4 12 21.4 12 17.8 17.8 12 17.8 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.2 19 6v5.6c0 4.3-2.9 7.9-7 9.2-4.1-1.3-7-4.9-7-9.2V6z"/><path d="M9.2 12.2l2 2 3.6-3.9"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M5.9 5.9l12.2 12.2"/></symbol>
+    <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2.6" y="4.6" width="12.4" height="9.4" rx="2"/><path d="M6.4 18.2h6.6M8.8 14v4.2"/><rect x="16.4" y="11.8" width="5" height="8.6" rx="1.6"/></symbol>
+    <symbol id="i-cable" viewBox="0 0 24 24"><rect x="2.2" y="9.2" width="5.8" height="5.6" rx="1.8"/><rect x="16" y="9.2" width="5.8" height="5.6" rx="1.8"/><path d="M8 12h8"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4.4" width="18" height="15.2" rx="2.4"/><path d="M7.4 9.6l3 2.6-3 2.6M13 15h4"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M13.6 3.4H7.2a2 2 0 0 0-2 2v13.2a2 2 0 0 0 2 2h9.6a2 2 0 0 0 2-2V8.8z"/><path d="M13.6 3.4v5.4h5.2M8.8 13h6.4M8.8 16.6h4.2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7.2" y="2.6" width="9.6" height="18.8" rx="2.6"/><path d="M10.6 18.8h2.8"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="5.4" width="16" height="10.4" rx="2"/><path d="M2.4 18.8h19.2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.8 21 20H3z"/><path d="M12 10v4.2M12 17.1h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.6l4.8 4.8L19.6 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.2 6.2l11.6 11.6M17.8 6.2L6.2 17.8"/></symbol>
+    <symbol id="i-dash" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.4" y="6" width="19.2" height="12" rx="2.2"/><path d="M6.4 10h.01M9.8 10h.01M13.2 10h.01M16.6 10h.01M8 14.2h8"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s7-6.4 7-11.2a7 7 0 1 0-14 0c0 4.8 7 11.2 7 11.2z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8.2" cy="8.2" r="4"/><path d="M11.2 11.2 20 20M17.4 20l2-2M14.8 17.4l2-2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 7.2V12l3.2 2"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M3.4 12h17.2M12 3.2a13.4 13.4 0 0 1 0 17.6 13.4 13.4 0 0 1 0-17.6z"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13.2 2.6 4.8 13.4h5.4l-1 8 8.4-10.8h-5.4z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.6 20.4c0-4 3.3-6.4 7.4-6.4s7.4 2.4 7.4 6.4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 20.8 20.8"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4M12 7.9h.01"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.4 10.2a5.6 5.6 0 0 1 11.2 0c0 4.4 1.6 5.6 1.6 5.6H4.8s1.6-1.2 1.6-5.6z"/><path d="M10.2 19a2 2 0 0 0 3.6 0"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3.4 3.6 7.6 12 11.8l8.4-4.2z"/><path d="M3.6 12 12 16.2 20.4 12M3.6 16.4 12 20.6l8.4-4.2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.6" y="10.2" width="14.8" height="9.6" rx="2.2"/><path d="M8.2 10.2V7.6a3.8 3.8 0 0 1 7.6 0v2.6"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9.2a13.6 13.6 0 0 1 18 0M6.4 12.8a8.6 8.6 0 0 1 11.2 0M9.8 16.4a3.8 3.8 0 0 1 4.4 0"/><path d="M12 19.7h.01"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.4" y="3.4" width="7" height="7" rx="1.8"/><rect x="13.6" y="3.4" width="7" height="7" rx="1.8"/><rect x="3.4" y="13.6" width="7" height="7" rx="1.8"/><rect x="13.6" y="13.6" width="7" height="7" rx="1.8"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4.6 12h14.8M13.4 6l6 6-6 6"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20.4 12a8.4 8.4 0 1 1-2.9-6.4"/><path d="M20.6 3.6v5.2h-5.2"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3.2v5.4M15 3.2v5.4"/><path d="M5.6 8.6h12.8v3.2a6.4 6.4 0 0 1-12.8 0z"/><path d="M12 18.4v2.4"/></symbol>
+  </defs>
+</svg>
+
+<nav class="nav">
+  <div class="nav-in">
+    <div class="brand"><svg><use href="#i-shield"/></svg>手机体检</div>
+    <div class="nav-links">
+      <a href="#demo">看报告</a>
+      <a href="#reach" class="hide-s">能查什么</a>
+      <a href="#steps">三步</a>
+      <a href="#platform" class="hide-s">三平台</a>
+      <a href="#iphone">iPhone</a>
+      <a href="#android">安卓鸿蒙</a>
+      <a href="#faq">问题</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ══════ 首屏 ══════ -->
+  <header class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow"><i></i>跑在电脑上的只读检查</div>
+        <h1>插上线，看清手机里<br>谁在动你的东西</h1>
+        <p class="lede">用数据线把手机连到电脑，跑几条命令，出一份能看懂的 HTML 报告。<b>手机上什么都不用装。</b></p>
+        <div class="tags">
+          <span class="tag t1"><svg><use href="#i-shield"/></svg>只读，不改任何东西</span>
+          <span class="tag t2"><svg><use href="#i-ban"/></svg>不代劳，最后几步你自己点</span>
+          <span class="tag t3"><svg><use href="#i-devices"/></svg>安卓 · 鸿蒙 · iPhone</span>
+        </div>
+      </div>
+      <div class="art-wrap">
+        <svg class="art" viewBox="0 0 520 228" aria-hidden="true">
+          <!-- 电脑 -->
+          <rect x="26" y="46" width="206" height="126" rx="12" class="ln"/>
+          <path d="M14 184h230" class="ln"/>
+          <path d="M26 172h206" class="soft"/>
+          <rect x="46" y="64" width="166" height="90" rx="8" class="soft"/>
+          <path d="M60 82h58" class="soft" style="stroke-width:3"/>
+          <path d="M60 98h96" class="soft"/>
+          <path d="M60 109h76" class="soft"/>
+          <rect x="60" y="124" width="52" height="9" rx="4.5" class="amber"/>
+          <rect x="118" y="124" width="30" height="9" rx="4.5" class="greyfill"/>
+          <rect x="60" y="139" width="34" height="9" rx="4.5" class="greyfill"/>
+          <!-- 手机 -->
+          <rect x="354" y="22" width="106" height="162" rx="20" class="ln"/>
+          <rect x="363" y="34" width="88" height="133" rx="12" class="soft"/>
+          <path d="M394 28h26" class="soft"/>
+          <path d="M394 176h26" class="soft"/>
+          <circle cx="377" cy="54" r="3" class="blue"/>
+          <path d="M387 54h50" class="soft"/>
+          <circle cx="377" cy="72" r="3" class="greyfill" style="fill:#39424d"/>
+          <path d="M387 72h40" class="soft"/>
+          <circle cx="377" cy="90" r="3" class="red"/>
+          <path d="M387 90h56" class="soft"/>
+          <circle cx="377" cy="108" r="3" class="greyfill" style="fill:#39424d"/>
+          <path d="M387 108h34" class="soft"/>
+          <circle cx="377" cy="126" r="3" class="greyfill" style="fill:#39424d"/>
+          <path d="M387 126h46" class="soft"/>
+          <path d="M387 144h22" class="soft"/>
+          <!-- 数据线 -->
+          <path d="M232 150c30 0 32 22 60 22s30-22 62-22" class="acc" stroke-dasharray="3 7"/>
+          <rect x="228" y="145" width="7" height="11" rx="2" class="blue" style="fill:none"/>
+          <rect x="345" y="145" width="7" height="11" rx="2" class="blue" style="fill:none"/>
+          <text x="26" y="212">你的电脑</text>
+          <text x="354" y="212">你的手机</text>
+          <text x="250" y="141" style="font-size:12.5px">数据线</text>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════ 00 先看报告 ══════ -->
+  <section id="demo">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#7fe09a"><svg class="ic"><use href="#i-file"/></svg></div>
+      <div>
+        <h2>先看一份报告，再说要不要做</h2>
+        <p class="sec-sub">下面两份是样例，点开就是完整报告，跟你自己跑出来的一模一样。</p>
+      </div>
+    </div>
+
+    <div class="demos">
+      <a class="dcard" href="report-android.html">
+        <div class="dcard-top">
+          <div class="dcard-ico a"><svg><use href="#i-phone"/></svg></div>
+          <div>
+            <div class="dcard-t">安卓 / 鸿蒙</div>
+            <div class="dcard-s">15 个软件里挑出 1 个删不掉的</div>
+          </div>
+        </div>
+        <div class="pv">
+          <div class="pv-bar">
+            <i class="r" style="width:7%"></i><i class="y" style="width:7%"></i>
+            <i class="b" style="width:20%"></i><i class="g" style="width:66%"></i>
+          </div>
+          <div class="pv-row"><span class="pv-ico">F</span>
+            <code>com.fake.systemservice</code><em class="hi">先处理</em></div>
+          <div class="pv-row"><span class="pv-ico">W</span>
+            <code>com.wifi.master.key</code><em class="mid">看一眼</em></div>
+          <div class="pv-row"><span class="pv-ico">V</span>
+            <code>一个视频软件</code><em class="mid">知道就行</em></div>
+        </div>
+        <div class="dcard-go">打开这份报告 <svg><use href="#i-arrow"/></svg></div>
+      </a>
+
+      <a class="dcard" href="report-ios.html">
+        <div class="dcard-top">
+          <div class="dcard-ico i"><svg><use href="#i-phone"/></svg></div>
+          <div>
+            <div class="dcard-t">iPhone</div>
+            <div class="dcard-s">机器只看到三样，重点在你核对的三项</div>
+          </div>
+        </div>
+        <div class="pv">
+          <div class="pv-bar">
+            <i class="r" style="width:7%"></i><i class="b" style="width:20%"></i>
+            <i class="g" style="width:73%"></i>
+          </div>
+          <div class="pv-row"><span class="pv-ico">员</span>
+            <code>员工服务</code><em class="hi">先处理</em></div>
+          <div class="pv-row"><span class="pv-ico">Q</span>
+            <code>一个社交软件</code><em class="mid">知道就行</em></div>
+          <div class="pv-row"><span class="pv-ico">T</span>
+            <code>一个翻译软件</code><em class="mid">知道就行</em></div>
+        </div>
+        <div class="dcard-go">打开这份报告 <svg><use href="#i-arrow"/></svg></div>
+      </a>
+    </div>
+
+    <p class="demo-note">样例里的软件是编的，用来演示报告长什么样。真机跑出来的报告只在你电脑上，不会传到任何地方。</p>
+  </section>
+
+  <!-- ══════ 01 能 / 不能 ══════ -->
+  <section id="reach">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-eye"/></svg></div>
+      <div>
+        <h2>它能看见什么，看不见什么</h2>
+        <p class="sec-sub">先把边界说清楚。这决定你要不要花这十几分钟。</p>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="col can">
+        <div class="col-head"><svg><use href="#i-check"/></svg><b>能看到</b></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>谁要了定位、麦克风、通讯录、短信这些权限</span></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>软件是从应用商店装的，还是从别处装的</span></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>谁开机会自己起来，谁一直在后台待着</span></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>谁在偷偷连网，连到了哪个地址</span></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>谁能弹窗、谁在读你的屏幕、谁在看你的通知</span></div>
+        <div class="li"><svg><use href="#i-check"/></svg><span>iPhone 上：装了什么软件，每个从哪装的</span></div>
+      </div>
+
+      <div class="col cant">
+        <div class="col-head"><svg><use href="#i-ban"/></svg><b>做不到</b></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>不卸载、不清数据、不改任何设置</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>不替你点任何按钮</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>不是杀毒软件，没有病毒库可以比对</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>看不到你的聊天记录、照片、相册</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>iPhone 设置里那 8 项，只能你自己核对</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>只反映检查那一刻，过后会变</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 02 三步 ══════ -->
+  <section id="steps">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-terminal"/></svg></div>
+      <div>
+        <h2>三步：连手机，跑命令，看报告</h2>
+        <p class="sec-sub">命令都在技能包目录里执行。复制粘贴就行，不用改。</p>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-top">
+          <div class="step-ico"><svg><use href="#i-cable"/></svg></div>
+          <div>
+            <div class="step-k">第 1 步</div>
+            <div class="step-t">连上手机</div>
+          </div>
+        </div>
+        <p>安卓和鸿蒙要打开 USB 调试。iPhone 解锁屏幕，点「信任这台电脑」。</p>
+        <div class="step-note">第一次连都要在手机上点一次同意。手机别锁屏。</div>
+      </div>
+
+      <div class="step">
+        <div class="step-top">
+          <div class="step-ico"><svg><use href="#i-terminal"/></svg></div>
+          <div>
+            <div class="step-k">第 2 步</div>
+            <div class="step-t">跑采集命令</div>
+          </div>
+        </div>
+        <p>按机型选一条。安卓一般 20 到 60 秒跑完。</p>
+        <div class="step-note">只用一条，不要三条都跑。</div>
+      </div>
+
+      <div class="step">
+        <div class="step-top">
+          <div class="step-ico"><svg><use href="#i-file"/></svg></div>
+          <div>
+            <div class="step-k">第 3 步</div>
+            <div class="step-t">出报告</div>
+          </div>
+        </div>
+        <p>先归因，再生成 HTML。打开 <span class="mono">report.html</span> 就能看。</p>
+        <div class="step-note">报告是单个文件，能发给别人，手机上也能打开。</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="code">
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 1 条：进目录</b></div>
+<pre><span class="k">cd</span> ~/.workbuddy/skills/phone-privacy-audit</pre>
+      </div>
+
+      <div class="code" style="margin-top:12px">
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 2 条：按机型选一条</b></div>
+<pre><span class="c"># 安卓</span>
+<span class="k">bash</span> scripts/collect_android.sh \
+  ./phone-audit
+
+<span class="c"># 鸿蒙（脚本自己判断走 adb 还是 hdc）</span>
+<span class="k">bash</span> scripts/collect_harmony.sh \
+  ./phone-audit
+
+<span class="c"># iPhone（必须用技能包自带的 python）</span>
+<span class="k">.venv/bin/python</span> \
+  scripts/collect_ios.py ./phone-audit</pre>
+        <div class="code-foot"><svg><use href="#i-info"/></svg><span>行尾的 \ 表示这条命令还没写完。整段一起复制，粘进终端就行。</span></div>
+      </div>
+
+      <div class="code" style="margin-top:12px">
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 3 条：出报告</b></div>
+<pre><span class="k">python3</span> scripts/analyze.py ./phone-audit
+<span class="k">python3</span> scripts/build_report.py \
+  ./phone-audit
+
+<span class="c"># 然后打开这份文件</span>
+./phone-audit/report.html</pre>
+      </div>
+
+      <div class="callout info">
+        <div class="co-ico"><svg><use href="#i-info"/></svg></div>
+        <div>
+          <h4>iPhone 在出报告前多一步</h4>
+          <p>采集完只会拿到软件清单。接着会给你一张 8 项的核对清单，你拿着手机照着走一圈，把结果填回去，再跑第 3 条命令。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 03 平台对照 ══════ -->
+  <section id="platform">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-devices"/></svg></div>
+      <div>
+        <h2>三个平台，能力差得很远</h2>
+        <p class="sec-sub">同样是跑一遍，能看到的完全不是一回事。这张表是整页最该记住的。</p>
+      </div>
+    </div>
+
+    <div class="mx">
+      <div class="mx-row">
+        <div class="mx-label" style="color:var(--dim);font-size:13px;letter-spacing:.06em">能查什么</div>
+        <div class="mx-col">安卓</div>
+        <div class="mx-col"><span class="f">鸿蒙 2/3/4</span><span class="s">鸿蒙</span></div>
+        <div class="mx-col"><span class="f">鸿蒙 NEXT</span><span class="s">NEXT</span></div>
+        <div class="mx-col">iPhone</div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">装了什么软件</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">从哪装的</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip part"><svg><use href="#i-dash"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">高危权限</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">开机自启</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">后台行为</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">网络外联</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">弹窗 / 读屏 / 通知</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">设备管理员</div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip full"><svg><use href="#i-check"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-x"/></svg></span></div>
+      </div>
+
+      <div class="mx-row">
+        <div class="mx-label">设置里的人工项</div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
+        <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
+        <div class="mx-cell"><span class="chip txt">8 项</span></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><span class="chip full"><svg><use href="#i-check"/></svg></span>能自动查到</span>
+      <span><span class="chip part"><svg><use href="#i-dash"/></svg></span>只能查到一部分</span>
+      <span><span class="chip none"><svg><use href="#i-x"/></svg></span>查不到</span>
+    </div>
+    <p style="font-size:14.5px;color:var(--dim);margin-top:9px;line-height:1.65">最后一行说的「人工项」：安卓和鸿蒙靠自动采集，不用你自己核对。iPhone 那 8 项没别的办法，只能你点一遍。</p>
+
+    <div class="callout amber">
+      <div class="co-ico"><svg><use href="#i-alert"/></svg></div>
+      <div>
+        <h4>iPhone 上是半自动，不是全自动</h4>
+        <p>自动只能拿到两样：装了什么、从哪装的。偷拍、偷听、被跟踪这类，答案全在设置里，而 iOS 不让任何工具读设置。所以剩下 8 项得你自己点。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 04 iPhone ══════ -->
+  <section id="iphone">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-phone"/></svg></div>
+      <div>
+        <h2>iPhone 用户看这一节</h2>
+        <p class="sec-sub">手机上零安装。这套东西装在你的电脑上。</p>
+      </div>
+    </div>
+
+    <div class="mini3">
+      <div class="mini">
+        <div class="mi"><svg><use href="#i-phone"/></svg><b>手机不装 App</b></div>
+        <p>没有安装包，没有描述文件要装。手机端什么都不用做。</p>
+      </div>
+      <div class="mini">
+        <div class="mi"><svg><use href="#i-laptop"/></svg><b>电脑要有 Python 3</b></div>
+        <p>依赖已经装在技能包自带的 <span class="mono">.venv</span> 里，你不用自己配。</p>
+      </div>
+      <div class="mini">
+        <div class="mi"><svg><use href="#i-cable"/></svg><b>一根数据线</b></div>
+        <p>第一次连，解锁手机，在屏幕上点「信任这台电脑」。</p>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:16px">
+      <div class="co-ico"><svg><use href="#i-eye"/></svg></div>
+      <div>
+        <h4>自动能看到的，只有两样</h4>
+        <p>iOS 把每个 App 关在自己的沙箱里，外面读不进去。这是苹果的设计，不是工具偷懒。</p>
+      </div>
+    </div>
+
+    <div class="only2">
+      <div class="o">
+        <svg><use href="#i-grid"/></svg>
+        <div><b>装了什么软件</b><span>名字、版本、是不是系统自带</span></div>
+      </div>
+      <div class="o">
+        <svg><use href="#i-search"/></svg>
+        <div><b>从哪装的</b><span>App Store / 测试版 / 企业证书 / 来源不明</span></div>
+      </div>
+    </div>
+
+    <div class="gap-line">剩下的，工具一条都读不到</div>
+
+    <div class="callout amber">
+      <div class="co-ico"><svg><use href="#i-keyboard"/></svg></div>
+      <div>
+        <h4>最该先看的一项：第三方键盘的「完全访问」</h4>
+        <p>开了这个开关的第三方键盘，能看见你在任何 App 里打的字。密码、验证码、银行卡号，都算。</p>
+        <p>你要是没主动开过，它就是关着的。不确定就去第 4 项看一眼。</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:19px;font-weight:700;margin:26px 0 4px;letter-spacing:-.01em">8 项人工核对</h3>
+    <p style="font-size:16px;color:var(--muted);line-height:1.65">拿着手机照着走一圈。每项三句话：在哪、什么算有问题、怎么处理。</p>
+
+    <div class="chks">
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">1</span>
+          <span class="chk-ico"><svg><use href="#i-lock"/></svg></span>
+          <h4>配置描述文件 / 设备管理</h4>
+        </div>
+        <div class="path">设置 → 通用 → VPN 与设备管理</div>
+        <div class="kv bad"><b>有问题</b><span>列表里有你不认识的「配置描述文件」或「设备管理」。这玩意能塞 Wi-Fi、证书、书签，还能锁住你的设置。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>点进去看是谁装的。不认识就截图留证，再删掉。公司发的手机别乱删，删了可能连不上公司 Wi-Fi 和邮箱。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">2</span>
+          <span class="chk-ico"><svg><use href="#i-devices"/></svg></span>
+          <h4>Apple ID 登录的设备</h4>
+        </div>
+        <div class="path">设置 → 最上面你的名字 → 设备列表</div>
+        <div class="kv bad"><b>有问题</b><span>有不认识、也没印象登录过的设备。别人的设备登着你的账号，就能看到你的照片、备忘录、短信。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>点那台设备 → 从账户中移除。然后马上改密码，把双重认证打开。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">3</span>
+          <span class="chk-ico"><svg><use href="#i-user"/></svg></span>
+          <h4>位置共享</h4>
+        </div>
+        <div class="path">查找 App → 底部「我」 → 共享我的位置</div>
+        <div class="kv bad"><b>有问题</b><span>共享给了你不想给的人。偷偷盯住一个人，在 iPhone 上最常见就是这么干的，而且还是你自己点过同意的。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>点那个人 → 停止共享我的位置。对方会收到提示，是家人的话先说一声。</span></div>
+      </div>
+
+      <div class="chk hot">
+        <div class="chk-top">
+          <span class="chk-n">4</span>
+          <span class="chk-ico"><svg><use href="#i-keyboard"/></svg></span>
+          <h4>第三方键盘的完全访问</h4>
+        </div>
+        <div class="path">设置 → 通用 → 键盘 → 键盘 → 点开第三方键盘</div>
+        <div class="kv bad"><b>有问题</b><span>「允许完全访问」是开着的。开了它，这个键盘能看见你在任何 App 里打的字，密码和验证码也算。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>把「允许完全访问」关掉。不用的键盘直接删。关掉之后语音输入和云同步会用不了，这是正常的。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">5</span>
+          <span class="chk-ico"><svg><use href="#i-clock"/></svg></span>
+          <h4>屏幕使用时间</h4>
+        </div>
+        <div class="path">设置 → 屏幕使用时间</div>
+        <div class="kv bad"><b>有问题</b><span>不是你设的，密码也不在你手里。知道这页密码的人，能看你每个 App 用了多久、什么时候用的，还能不让你装软件、不让你删软件。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>别人设的，得要他给密码才能关。关不掉这件事本身就有问题。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">6</span>
+          <span class="chk-ico"><svg><use href="#i-pin"/></svg></span>
+          <h4>App 的定位权限</h4>
+        </div>
+        <div class="path">设置 → 隐私与安全性 → 定位服务</div>
+        <div class="kv bad"><b>有问题</b><span>有你很少用、却拿到「始终允许」的应用。一个不该知道你位置的应用拿到这个，就是在一直跟着你。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>用不上的改成「使用 App 期间」或「永不」。这页最下面有个「重要地点」，记着你去过的所有地方，介意就关掉。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">7</span>
+          <span class="chk-ico"><svg><use href="#i-globe"/></svg></span>
+          <h4>VPN 与网络中转</h4>
+        </div>
+        <div class="path">设置 → 通用 → VPN 与设备管理 → VPN</div>
+        <div class="kv bad"><b>有问题</b><span>VPN 列表里有你不认识的配置。第三方 VPN 能看到你所有的上网记录，有些免费加速器就是靠卖这个赚钱。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>点进去删掉。要是描述文件下发的，回到第 1 项把描述文件删了。</span></div>
+      </div>
+
+      <div class="chk">
+        <div class="chk-top">
+          <span class="chk-n">8</span>
+          <span class="chk-ico"><svg><use href="#i-zap"/></svg></span>
+          <h4>快捷指令自动化</h4>
+        </div>
+        <div class="path">快捷指令 App → 底部「自动化」</div>
+        <div class="kv bad"><b>有问题</b><span>有你没设过的规则。它能做到「一到家就自动把位置发给某人」，设一次就长期有效，而且在设置里找不到。</span></div>
+        <div class="kv how"><b>怎么处理</b><span>左滑，删掉。</span></div>
+      </div>
+    </div>
+
+    <p style="font-size:15px;color:var(--dim);margin-top:12px;line-height:1.7">顺序有讲究。第 1、2 项如果有问题，先处理完，再谈别的应用。描述文件和账号被人登录，优先级高于一切。</p>
+
+    <div class="callout warn" style="margin-top:22px">
+      <div class="co-ico"><svg><use href="#i-ban"/></svg></div>
+      <div>
+        <h4>别去 App Store 装「清理大师」「安全卫士」</h4>
+        <p>iOS 不允许一个 App 读另一个 App 的数据。这类软件能扫的只有它自己的缓存，扫完给你看一堆没用的数字。</p>
+        <p>对偷拍、偷听、被跟踪，它们一点用都没有。真想查，看的就是上面那 8 项设置。</p>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:12px">
+      <div class="co-ico"><svg><use href="#i-alert"/></svg></div>
+      <div>
+        <h4>报告说某个软件是企业证书装的</h4>
+        <p>特征是这个软件在 App Store 搜不到。企业证书版随时会被苹果封掉，封了就打不开，你也没法更新。</p>
+        <p>正确做法：去 App Store 装它的正式版，装好登录，确认能用，再删掉企业证书那个。别反过来。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 05 安卓 / 鸿蒙 ══════ -->
+  <section id="android">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-cable"/></svg></div>
+      <div>
+        <h2>安卓和鸿蒙：先打开 USB 调试</h2>
+        <p class="sec-sub">不打开这个开关，电脑看不到手机。打开之后能查到的东西最多。</p>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="fstep"><span class="fn">1</span><div><b>设置 → 关于手机</b><span>有些机型叫「关于本机」</span></div></div>
+      <div class="fstep"><span class="fn">2</span><div><b>连点「版本号」7 次</b><span>会提示你已经是开发者</span></div></div>
+      <div class="fstep"><span class="fn">3</span><div><b>回到设置 → 开发者选项</b><span>华为在「系统和更新」里</span></div></div>
+      <div class="fstep"><span class="fn">4</span><div><b>打开「USB 调试」</b><span>插线后手机会弹窗，点允许</span></div></div>
+    </div>
+
+    <div class="vend">
+      <div class="vrow"><div class="vname"><i></i>小米 / 红米</div><div class="vdesc">还要打开「USB 安装」和「USB 调试（安全设置）」。这两项要登录小米账号才能开。</div></div>
+      <div class="vrow"><div class="vname"><i></i>华为 / 荣耀</div><div class="vdesc">开发者选项不在「关于手机」里，在「系统和更新」下面。</div></div>
+      <div class="vrow"><div class="vname"><i></i>OPPO / 一加 / realme</div><div class="vdesc">版本号在「关于本机 → 版本信息」里，连点那里。</div></div>
+      <div class="vrow"><div class="vname"><i></i>vivo / iQOO</div><div class="vdesc">在「系统管理 → 关于手机」里连点「软件版本号」。</div></div>
+      <div class="vrow"><div class="vname"><i></i>三星</div><div class="vdesc">在「关于手机 → 软件信息」里连点「编译编号」。</div></div>
+      <div class="vrow"><div class="vname"><i></i>鸿蒙 2 / 3 / 4</div><div class="vdesc">底座还是安卓，按华为的路径走，检查能力和安卓完全一样。</div></div>
+    </div>
+
+    <div class="callout amber" style="margin-top:14px">
+      <div class="co-ico"><svg><use href="#i-info"/></svg></div>
+      <div>
+        <h4>纯血鸿蒙（HarmonyOS NEXT）走 hdc</h4>
+        <p>它装不了安卓的 APK，只认华为的 hdc 工具。hdc 随 DevEco Studio 一起装，装好要加进 PATH。</p>
+        <p>这条路能读到的很少：只有应用清单和设备信息。手机侧一样要开「设置 → 系统 → 开发者选项 → USB 调试」。报告会自己写明这次看到的太少，不会假装查全了。</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:19px;font-weight:700;margin:26px 0 4px;letter-spacing:-.01em">连不上的时候，按这个顺序试</h3>
+    <div class="fix">
+      <div class="r"><svg><use href="#i-cable"/></svg><span>换一根数据线。很多线只有充电功能，没有数据功能。</span></div>
+      <div class="r"><svg><use href="#i-plug"/></svg><span>换一个 USB 口，别用扩展坞和前面板。</span></div>
+      <div class="r"><svg><use href="#i-terminal"/></svg><span>Mac 上先跑一次 <span class="mono">adb kill-server</span>，再重插。</span></div>
+      <div class="r"><svg><use href="#i-laptop"/></svg><span>Windows 要装手机厂商的 USB 驱动，装完重启。</span></div>
+      <div class="r"><svg><use href="#i-phone"/></svg><span>手机上把 USB 模式从「仅充电」改成「传输文件」。</span></div>
+      <div class="r"><svg><use href="#i-refresh"/></svg><span>还是没有？在开发者选项里点「撤销 USB 调试授权」，重新插，重新点允许。</span></div>
+    </div>
+  </section>
+
+  <!-- ══════ 06 常见问题 ══════ -->
+  <section id="faq">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-info"/></svg></div>
+      <div>
+        <h2>常见问题</h2>
+        <p class="sec-sub">点开看答案。</p>
+      </div>
+    </div>
+
+    <div class="faqs">
+    <details>
+      <summary>手机上要装 App 吗？</summary>
+      <div class="faq-b">不用。整套东西装在电脑上，手机端零安装。你只要插一根线。</div>
+    </details>
+
+    <details>
+      <summary>会不会把我手机里的东西传走？</summary>
+      <div class="faq-b">不会联网上传。采集结果只写进你自己电脑上的 <span class="mono">./phone-audit</span> 目录，报告也是本地文件。</div>
+    </details>
+
+    <details>
+      <summary>会不会自己把我软件删了，或者改我设置？</summary>
+      <div class="faq-b">不会。整套脚本里没有一条写命令：不卸载、不清数据、不改设置、不授予权限、不替你点按钮。它只读，然后告诉你该去哪个设置里点。</div>
+    </details>
+
+    <details>
+      <summary>我不是技术员，能跑得动吗？</summary>
+      <div class="faq-b">能。就三条命令，复制粘贴。<b>第 1 条进目录，第 2 条采集，第 3 条出报告。</b>中间不用改任何参数。</div>
+    </details>
+
+    <details>
+      <summary>iPhone 能查出被监控吗？</summary>
+      <div class="faq-b">能查一部分，而且是最要紧的那部分。自动能看到的只有装了什么、从哪装的；被跟踪、被定位、被同步这类，答案全在那 8 项设置里，得你自己点一遍。</div>
+    </details>
+
+    <details>
+      <summary>为什么 iPhone 只能看到这么点？</summary>
+      <div class="faq-b">因为 iOS 把每个 App 关在自己的沙箱里，一个 App 读不到另一个 App 的数据，电脑上的工具也一样。这是苹果的设计。<b>不是工具偷懒，谁都读不到。</b></div>
+    </details>
+
+    <details>
+      <summary>报告说没问题，是不是就安全了？</summary>
+      <div class="faq-b">不能这么理解。它只说明这次读到的这些，没凑成说得通的问题。<b>没读到的项不等于安全，只等于没看到。</b>iPhone 上尤其如此，那 8 项你自己没核对，就等于没查。</div>
+    </details>
+
+    <details>
+      <summary>要 root 或者越狱吗？</summary>
+      <div class="faq-b">不用，也不该。为了查一个软件去 root，代价远大于收益：保修没了，系统更容易被攻破。不 root 一样能看到权限、安装来源、后台行为和网络连接。</div>
+    </details>
+
+    <details>
+      <summary>Windows 电脑能用吗？</summary>
+      <div class="faq-b">能。安卓和鸿蒙装好 adb 就行。iPhone 在 Windows 上要先装 iTunes（或者苹果的设备驱动），不然电脑认不出手机。</div>
+    </details>
+
+    <details>
+      <summary>会不会误报？</summary>
+      <div class="faq-b">会。这套判断天生会误报，所以它不会单独拿一个信号下结论。<b>「不是商店装的」「要了敏感权限」本身都不算问题</b>，只有几件事凑到一起才值得说。报告里也会主动告诉你哪些不用管。</div>
+    </details>
+
+    <details>
+      <summary>跑一遍要多久？</summary>
+      <div class="faq-b">安卓一般 20 到 60 秒。iPhone 采集只要几秒，但那 8 项人工核对要花你五分钟左右。</div>
+    </details>
+
+    <details>
+      <summary>报告能发给别人看吗？</summary>
+      <div class="faq-b">能，它是单个 HTML 文件，不依赖网络，手机上也能打开。但里面有你装了哪些软件的清单，发给别人之前自己先看一眼。</div>
+    </details>
+    </div>
+  </section>
+
+  <!-- ══════ 07 底线 ══════ -->
+  <section id="bottom">
+    <div class="sec-head">
+      <div class="sec-num" style="color:#8cc4ff"><svg class="ic"><use href="#i-shield"/></svg></div>
+      <div>
+        <h2>四条底线，先说在前面</h2>
+        <p class="sec-sub">这四句话如果有一条你不认同，那这套工具就不适合你。</p>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="bcard">
+        <svg><use href="#i-lock"/></svg>
+        <b>只读，不写</b>
+        <p>没有一条命令会改动你的手机。看得到，碰不到。</p>
+      </div>
+      <div class="bcard">
+        <svg><use href="#i-ban"/></svg>
+        <b>不帮你点</b>
+        <p>哪一项该关、在哪个设置里、关掉会失去什么，都说清楚。最后那几步你自己点。</p>
+      </div>
+      <div class="bcard">
+        <svg><use href="#i-search"/></svg>
+        <b>不是杀毒软件</b>
+        <p>没有病毒库可以比对。它看的是权限和行为有没有说不通的地方。</p>
+      </div>
+      <div class="bcard">
+        <svg><use href="#i-clock"/></svg>
+        <b>只反映那一刻</b>
+        <p>这是一次体检，不是持续防护。查完装了什么新软件，结论就变了。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b>手机体检</b> · 只读诊断，不代替你操作<br>
+    采集结果和报告都在你自己电脑上。查完记得把 <span class="mono">./phone-audit</span> 目录收好。
+    <div class="foot-meta">
+      <span>开源 · MIT License</span>
+      <span>安卓 · 鸿蒙 · iPhone</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* 托管平台要求每个页面都带 sharecode，否则 403。
+   站内跳转时把当前页的 sharecode 接到目标链接上，用户感觉不到。 */
+(function () {
+  var code = new URLSearchParams(location.search).get('sharecode');
+  if (!code) return;
+  document.querySelectorAll('a[href]').forEach(function (a) {
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || /^(https?:|mailto:|tel:)/i.test(href)) return;
+    try {
+      var u = new URL(href, location.href);
+      if (u.origin !== location.origin) return;
+      if (!u.searchParams.get('sharecode')) u.searchParams.set('sharecode', code);
+      a.setAttribute('href', u.pathname + u.search + u.hash);
+    } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

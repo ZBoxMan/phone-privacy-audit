@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# 采集产物：含真实设备的应用列表，不要提交
+phone-audit/
+shots/
+raw/
+audit.json
+report.html

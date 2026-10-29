@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手机体检报告</title>
+<style>
+  :root{
+    --bg:#0f1216; --card:#181c22; --card2:#1f242c; --line:#2c333d;
+    --text:#eef2f6; --muted:#94a1ae; --dim:#68757f;
+    --red:#ff6b6b; --amber:#f0b43c; --blue:#5aa9ff; --green:#4ecb71;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:17px; line-height:1.7; padding:32px 18px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:800px;margin:0 auto}
+  svg{stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ── 头部 ── */
+  header{margin-bottom:22px}
+  .eyebrow{font-size:14px;color:var(--dim);letter-spacing:.06em;margin-bottom:8px}
+  h1{font-size:30px;font-weight:700;letter-spacing:-.01em;line-height:1.3;margin-bottom:10px;text-wrap:balance}
+  .devline{font-size:14.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+  .devline span{display:flex;align-items:center;gap:6px}
+  .devline svg{width:15px;height:15px;stroke-width:1.7;opacity:.6}
+
+  /* ── 结论 ── */
+  .hero{
+    border-radius:18px;padding:26px 26px 24px;margin:22px 0 30px;
+    border:1px solid var(--line);background:var(--card);
+    display:flex;gap:20px;align-items:flex-start;
+  }
+  .hero.bad{border-color:rgba(255,107,107,.38);background:linear-gradient(160deg,rgba(255,107,107,.1),rgba(255,107,107,.03))}
+  .hero.warn{border-color:rgba(240,180,60,.38);background:linear-gradient(160deg,rgba(240,180,60,.1),rgba(240,180,60,.03))}
+  .hero.ok{border-color:rgba(78,203,113,.32);background:linear-gradient(160deg,rgba(78,203,113,.09),rgba(78,203,113,.03))}
+  .hero-ico{width:60px;height:60px;flex-shrink:0;border-radius:16px;display:flex;align-items:center;justify-content:center}
+  .hero.bad .hero-ico{background:rgba(255,107,107,.16);color:#ff8f8f}
+  .hero.warn .hero-ico{background:rgba(240,180,60,.16);color:#f5c563}
+  .hero.ok .hero-ico{background:rgba(78,203,113,.14);color:#6fdd8d}
+  .hero-ico svg{width:32px;height:32px;stroke-width:2}
+  .hero-main{flex:1;min-width:0}
+  .hero h2{font-size:26px;font-weight:700;line-height:1.38;letter-spacing:-.01em;text-wrap:balance}
+  .hero.bad h2{color:#ff9c9c}
+  .hero.warn h2{color:#f5c563}
+  .hero.ok h2{color:#7fe09a}
+  .hero h2 em{font-style:normal;font-size:40px;font-weight:800;letter-spacing:-.02em;margin-right:2px}
+  .hero-detail{font-size:15.5px;color:#a8b5c2;line-height:1.72;margin-top:9px;max-width:56ch}
+
+  /* 分布条 */
+  .dist{display:flex;height:16px;border-radius:8px;overflow:hidden;background:#151a20;margin-top:18px}
+  .dist i{display:block;height:100%;box-shadow:inset -2px 0 0 #151a20;transition:width .6s ease}
+  .dist i:last-child{box-shadow:none}
+  .dist i.h{background:var(--red)}
+  .dist i.c{background:var(--amber)}
+  .dist i.w{background:var(--blue);opacity:.85}
+  .dist i.g{background:#39424d}
+  .dist i.o{background:rgba(78,203,113,.5)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:13px;font-size:14.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .legend i{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .legend b{color:var(--text);font-size:16px;font-weight:700}
+
+  /* ── 区块 ── */
+  section{margin-bottom:40px}
+  .sec-head{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+  .sec-head svg{width:21px;height:21px;color:var(--dim);stroke-width:2}
+  h2.sec{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .sec-sub{font-size:15px;color:var(--dim);margin:0 0 18px 32px;line-height:1.65}
+
+  /* ── 应用卡片 ── */
+  .app{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
+  .app.high{border-left:4px solid var(--red)}
+  .app.check{border-left:4px solid var(--amber)}
+  .app.watch{border-left:4px solid var(--blue)}
+  .app-head{padding:20px 22px 18px;display:flex;gap:15px;align-items:flex-start}
+  .app-ico{
+    width:46px;height:46px;border-radius:12px;flex-shrink:0;
+    background:var(--card2);display:flex;align-items:center;justify-content:center;
+    font-size:19px;font-weight:700;color:#a7b6c5;
+  }
+  .app.high .app-ico{background:rgba(255,107,107,.13);color:#ff9c9c}
+  .app.check .app-ico{background:rgba(240,180,60,.13);color:#f5c563}
+  .app-main{flex:1;min-width:0}
+  .app-name{font-size:20px;font-weight:650;line-height:1.35;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .tag{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.02em}
+  .tag.high{background:rgba(255,107,107,.18);color:#ffa3a3}
+  .tag.check{background:rgba(240,180,60,.18);color:#f8ce85}
+  .tag.watch{background:rgba(90,169,255,.16);color:#8cc4ff}
+  .app-sub{font-size:14px;color:var(--dim);margin-top:3px;line-height:1.6}
+
+  /* 能力图标网格 —— 报告主体 */
+  .caps{
+    display:grid;gap:8px;padding:0 22px 20px;justify-content:start;
+    grid-template-columns:repeat(var(--n,4),minmax(0,96px));
+  }
+  .cap{
+    background:var(--card2);border:1px solid transparent;border-radius:11px;
+    padding:12px 6px 9px;text-align:center;color:var(--muted);
+  }
+  .cap svg{width:25px;height:25px;display:block;margin:0 auto 7px}
+  .cap b{display:block;font-size:14.5px;font-weight:650;line-height:1.25;color:var(--text);letter-spacing:.01em}
+  .cap.red{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.26);color:#ff9c9c}
+  .cap.amber{background:rgba(240,180,60,.1);border-color:rgba(240,180,60,.26);color:#f5c563}
+  .cap.blue{background:rgba(90,169,255,.09);border-color:rgba(90,169,255,.24);color:#8cc4ff}
+
+  details{border-top:1px solid var(--line)}
+  summary{padding:14px 22px;font-size:15.5px;color:var(--blue);cursor:pointer;list-style:none;user-select:none;font-weight:500}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"  ▾";font-size:12px}
+  details[open] summary::after{content:"  ▴"}
+  .body{padding:2px 22px 22px}
+  details.more{border-top:1px dashed var(--line);margin-top:4px}
+  details.more summary{padding:11px 0;font-size:14.5px;color:var(--dim)}
+  .more-body{padding-bottom:6px;opacity:.92}
+
+  .block{margin-bottom:18px}
+  .block:last-child{margin-bottom:0}
+  .label{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;letter-spacing:.04em;margin-bottom:8px}
+  .label svg{width:15px;height:15px;stroke-width:2.2}
+  .label.why{color:var(--dim)}
+  .label.how{color:var(--green)}
+  .block p{font-size:16px;color:#c2ccd8;line-height:1.78}
+  .block p + p{margin-top:9px}
+  .note{font-size:14.5px;color:#8fd39a;margin-top:8px;padding-left:11px;border-left:2px solid rgba(78,203,113,.4)}
+
+  /* ── 人工核对 ── */
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .chk{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 17px;position:relative;overflow:hidden}
+  .chk.yes{border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.06)}
+  .chk.no{border-color:rgba(78,203,113,.26)}
+  .chk.unknown{opacity:.55}
+  .chk-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .chk-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .chk.yes .chk-ico{background:rgba(255,107,107,.18);color:#ff8f8f}
+  .chk.no .chk-ico{background:rgba(78,203,113,.15);color:#6fdd8d}
+  .chk.unknown .chk-ico{background:#262c34;color:var(--dim)}
+  .chk-ico svg{width:19px;height:19px;stroke-width:2.4}
+  .chk-title{font-size:16.5px;font-weight:650;line-height:1.35}
+  .chk-desc{font-size:14px;color:var(--muted);line-height:1.65}
+  .chk.yes .chk-desc{color:#e8b4b4}
+  details.opt-more{margin-top:14px;border-top:1px dashed var(--line);border-radius:0}
+  details.opt-more summary{padding:14px 0 0;font-size:14.5px;color:var(--dim);background:none}
+  details.opt-more summary::after{content:"  ▾"}
+
+  /* ── 能力归属 ── */
+  .ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ctrl-box{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:17px 18px}
+  .ctrl-top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+  .ctrl-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card2);color:#8cc4ff}
+  .ctrl-ico svg{width:21px;height:21px}
+  .ctrl-t{font-size:16.5px;font-weight:650;line-height:1.3}
+  .ctrl-n{font-size:13px;color:var(--dim);margin-top:1px}
+  .ctrl-list{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  .ctrl-list li{font-size:13.5px;background:var(--card2);border-radius:7px;padding:4px 9px;color:#c3ced9;line-height:1.5}
+  .ctrl-list li.known{color:#9fd4ac;background:rgba(78,203,113,.1)}
+  .ctrl-desc{font-size:12.8px;color:var(--dim);line-height:1.6;margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.05)}
+  .empty{font-size:15px;color:var(--dim)}
+
+  /* ── 权限条 ── */
+  .perm-item{border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:11px}
+  .perm-item:last-child{border-bottom:none;padding-bottom:2px}
+  .perm-row{display:grid;grid-template-columns:minmax(0,158px) 1fr 30px;gap:14px;align-items:center;padding:11px 0 7px}
+  .perm-name{font-size:15.5px;color:#c3ced9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .perm-bar{height:9px;border-radius:5px;background:#151a20;overflow:hidden}
+  .perm-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#f0b43c,#ff6b6b)}
+  .perm-n{font-size:15px;font-weight:700;color:var(--amber);text-align:right}
+  .perm-tags{display:flex;flex-wrap:wrap;gap:5px}
+  .perm-tags span{font-size:12.5px;background:var(--card2);color:#9aa8b5;padding:2px 8px;border-radius:6px;line-height:1.55}
+  .perm-tags span.more{background:transparent;color:var(--dim)}
+
+  /* ── 说明格 ── */
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .fact{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 17px}
+  .fact svg{width:22px;height:22px;margin-bottom:9px}
+  .fact b{display:block;font-size:16px;font-weight:650;margin-bottom:4px;line-height:1.35}
+  .fact p{font-size:14px;color:var(--muted);line-height:1.62}
+  .fact:last-child:nth-child(odd){grid-column:1 / -1}
+  .fact.yes svg{color:var(--green)}
+  .fact.no svg{color:var(--dim)}
+
+  .quiet{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:6px 18px}
+  .qrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .qrow:last-child{border-bottom:none}
+  .qrow b{font-size:15.5px;font-weight:600;color:#c8d3de;flex:1;min-width:110px}
+  .minis{display:flex;gap:6px;flex-wrap:wrap}
+  .mini{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:3px 8px;border-radius:7px;background:var(--card2);color:var(--muted)}
+  .mini svg{width:13px;height:13px;stroke-width:2.1}
+  .mini.red{background:rgba(255,107,107,.1);color:#ffa3a3}
+  .mini.amber{background:rgba(240,180,60,.1);color:#f8ce85}
+  .mini.blue{background:rgba(90,169,255,.1);color:#8cc4ff}
+  .quiet b{color:#cbd5e0}
+  .rows{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .row{padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.05);font-size:15px;display:flex;gap:10px;align-items:center;color:#c3ced9}
+  .row:last-child{border-bottom:none}
+  .row svg{width:16px;height:16px;color:var(--dim);flex-shrink:0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;color:#8b9aa8}
+  .app-name .mono{font-size:16px;color:#c8d3de;letter-spacing:-.01em;word-break:break-all}
+
+  footer{margin-top:36px;text-align:center;font-size:13.5px;color:var(--dim);line-height:1.9}
+
+  @media(max-width:620px){
+    body{font-size:16px;padding:22px 14px 64px}
+    h1{font-size:23px;line-height:1.35}
+    .hero{padding:20px;gap:14px}
+    .hero-ico{width:48px;height:48px;border-radius:13px}
+    .hero-ico svg{width:26px;height:26px}
+    .hero h2{font-size:21px}
+    .hero h2 em{font-size:32px}
+    .checks,.ctrl-grid,.facts{grid-template-columns:1fr}
+    .app-name{font-size:18px}
+    .caps{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));justify-content:stretch}
+    .perm-row{grid-template-columns:minmax(0,116px) 1fr 24px;gap:10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow" id="eyebrow">手机体检报告</div>
+    <h1 id="devname">正在生成…</h1>
+    <div class="devline" id="devline"></div>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="hero-ico" id="hero-ico"></div>
+    <div class="hero-main">
+      <h2 id="v-head"></h2>
+      <p class="hero-detail" id="v-detail"></p>
+      <div class="dist" id="dist"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <section id="find-sec">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><h2 class="sec">先看这几个软件</h2></div>
+    <p class="sec-sub">方块就是它能干的事</p>
+    <div id="findings"></div>
+  </section>
+
+  <section id="ctrl-sec">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg><h2 class="sec">谁能动你的手机</h2></div>
+    <p class="sec-sub">这几样给出去，能干的事就大了</p>
+    <div class="ctrl-grid" id="ctrl"></div>
+  </section>
+
+  <section id="perm-sec" style="display:none">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="4"/><path d="M11 11l9 9M17 17l2-2M20 20l1.5-1.5"/></svg><h2 class="sec">它想打听你多少事</h2></div>
+    <p class="sec-sub">条越长，管的事越多</p>
+    <div id="perms"></div>
+  </section>
+
+  <section id="manual-sec" style="display:none">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><h2 class="sec">你自己看到的那几项</h2></div>
+    <p class="sec-sub">这几项在设置里，机器读不到</p>
+    <div class="checks" id="manual"></div>
+    <div id="manual-opt"></div>
+  </section>
+
+  <section id="quiet-sec" style="display:none">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><h2 class="sec">这些不用管</h2></div>
+    <div class="quiet" id="quiet"></div>
+  </section>
+
+  <section id="miss-sec" style="display:none">
+    <div class="sec-head"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><h2 class="sec">这次没看到的地方</h2></div>
+    <p class="sec-sub">没看到 ≠ 没问题</p>
+    <div class="rows" id="miss"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><h2 class="sec">这份报告能帮你什么</h2></div>
+    <div class="facts" id="notice"></div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+const DATA = {"platform": "android", "name_map": {"com.miui.securitycenter": "手机管家", "com.eg.android.AlipayGphone": "支付宝", "com.google.android.gms": "Google 服务", "com.ss.android.ugc.aweme.lite": "抖音极速版", "com.android.bankabc": "农业银行", "com.xunmeng.pinduoduo": "拼多多", "com.tencent.mm": "微信", "com.video.player.hd": "一个视频软件", "com.cleanpro.boost": "一个清理加速软件", "com.tianqi.weather.free": "一个天气软件"}, "generated_at": "2026-10-29 11:00 UTC", "verdict": {"tone": "bad", "headline": "有 1 个软件，先看看", "detail": "下面每一条都写了它哪儿不对、你该干什么。弄完可以再查一次。"}, "manual_checks": [], "level_labels": {"high": "先处理这个", "check": "有空看一眼", "watch": "知道就行", "low": "没发现异常"}, "device": {"brand": "Xiaomi", "manufacturer": "Xiaomi", "model": "Redmi Note 12", "os": "Android 13", "security_patch": "2024-11-01", "scanned_at": "2026-10-29T09:40:00Z"}, "completeness": {"ok": 29, "failed": 1, "failed_items": ["net_udp6:empty"], "failed_nice": ["IPv6 UDP 连接（读不到内容）"], "note": "本次有 1 项没读出来，相关结论的覆盖范围要相应缩小。"}, "summary": {"total_apps": 15, "third_party": 11, "side_loaded": 4, "high": 1, "check": 1, "watch": 3}, "control_points": [{"key": "admin", "title": "你删不掉的软件", "desc": "想删它，手机会拦住你", "items": ["com.fake.systemservice", "com.google.android.gms"]}, {"key": "a11y", "title": "能偷看你屏幕的软件", "desc": "能看见你屏幕上的字，还能替你点按钮", "items": ["com.fake.systemservice", "com.miui.securitycenter"]}, {"key": "notif", "title": "能读你消息的软件", "desc": "短信验证码、聊天消息都看得见", "items": ["com.fake.systemservice", "com.ss.android.ugc.aweme.lite"]}, {"key": "overlay", "title": "能弹广告的软件", "desc": "那些关不掉的浮窗就是它们干的", "items": ["com.cleanpro.boost", "com.fake.systemservice", "com.tencent.mm", "com.video.player.hd", "com.wifi.master.key"]}], "permissions": [{"pkg": "com.fake.systemservice", "name": "com.fake.systemservice", "has_icon": false, "perms": ["位置", "后台位置", "短信", "短信", "麦克风", "通讯录", "通话记录", "弹窗"], "count": 8}, {"pkg": "com.tencent.mm", "name": "微信", "has_icon": true, "perms": ["位置", "麦克风", "相机", "通讯录", "弹窗"], "count": 5}, {"pkg": "com.tianqi.weather.free", "name": "一个天气软件", "has_icon": true, "perms": ["位置", "大致位置", "后台位置", "手机信息", "通讯录"], "count": 5}, {"pkg": "com.wifi.master.key", "name": "com.wifi.master.key", "has_icon": false, "perms": ["位置", "短信", "手机信息", "弹窗"], "count": 4}, {"pkg": "com.cleanpro.boost", "name": "一个清理加速软件", "has_icon": false, "perms": ["手机信息", "通讯录", "弹窗"], "count": 3}, {"pkg": "com.ss.android.ugc.aweme.lite", "name": "抖音极速版", "has_icon": true, "perms": ["位置", "后台位置", "麦克风"], "count": 3}, {"pkg": "com.xunmeng.pinduoduo", "name": "拼多多", "has_icon": true, "perms": ["位置", "后台位置", "相机"], "count": 3}, {"pkg": "com.android.bankabc", "name": "农业银行", "has_icon": true, "perms": ["相机", "手机信息"], "count": 2}, {"pkg": "com.eg.android.AlipayGphone", "name": "支付宝", "has_icon": true, "perms": ["位置", "相机"], "count": 2}, {"pkg": "com.health.step.counter", "name": "一个健康软件", "has_icon": true, "perms": ["位置", "后台位置"], "count": 2}, {"pkg": "com.video.player.hd", "name": "一个视频软件", "has_icon": false, "perms": ["手机信息", "弹窗"], "count": 2}], "outbound": [{"pkg": "com.fake.systemservice", "name": "com.fake.systemservice", "remote": "1.44.27.60:54465", "proto": "TCP"}, {"pkg": "com.fake.systemservice", "name": "com.fake.systemservice", "remote": "34.216.184.93:443", "proto": "TCP"}, {"pkg": "com.ss.android.ugc.aweme.lite", "name": "抖音极速版", "remote": "34.216.24.46:443", "proto": "TCP"}, {"pkg": "com.xunmeng.pinduoduo", "name": "拼多多", "remote": "1.44.27.92:443", "proto": "TCP"}], "preinstalled": [], "findings": [{"pkg": "com.fake.systemservice", "name": "com.fake.systemservice", "title": "它把自己锁住了，你删不掉", "level": "high", "score": 100, "has_icon": false, "is_system": false, "installer_label": "", "installed_at": "2026-08-11", "installed_days": 79, "signals": [{"rule": "R_ADMIN", "score": 40, "title": "它把自己锁住了，你删不掉", "why": "它在手机里加了一道锁。你想删它，手机会拦住你。狠一点的还能远程锁屏、把手机清空。这功能本来是公司管员工手机用的。", "how": "打开设置，顶上搜「设备管理」。列表里有它，就把勾去掉。去掉之后才删得掉。", "note": ""}, {"rule": "R_A11Y", "score": 34, "title": "它能看见你屏幕上的字", "why": "这个开关本来是给读屏软件用的。开了之后，它能看到你屏幕上所有的字，还能替你点按钮。转账那个确认键，它也能点。", "how": "设置 → 无障碍 → 已下载的服务。里面一排开关，不认识的先关掉。关完发现哪个功能不能用了，再打开。", "note": ""}, {"rule": "R_CAMO", "score": 25, "title": "桌面找不到它，名字却像手机自带的", "why": "桌面翻遍了也没有它的图标，名字里却带着「系统」「服务」「更新」这些词。正常软件很少两样都占。", "how": "先别删。设置 → 应用，找到它，把详情页截图存下来，再决定怎么办。", "note": ""}, {"rule": "R_NOTIF", "score": 22, "title": "你的通知它全看得见", "why": "微信消息、银行到账、短信验证码，只要弹在通知栏上，它都能看到。这开关一般是手表手环才要。", "how": "设置 → 通知 → 通知使用权。把不认识的关掉。", "note": ""}, {"rule": "R_BG_LOC", "score": 22, "title": "你不用它，它也在记你在哪", "why": "它能后台定位，桌面上又没图标。这两样凑一起，是跟踪软件最常干的事。正常软件就算要定位，也有个看得见的界面。", "how": "这条要当真。设置 → 位置信息 → 应用权限，看它什么时候开的。再看设置 → 应用 → 它 → 流量，看是不是一直在联网。", "note": ""}, {"rule": "R_OVERLAY", "score": 16, "title": "它能在你手机上随便弹广告", "why": "你正刷着微信、看着视频，它能在最上面盖一层，还关不掉。那些莫名其妙的浮窗就是这么来的。", "how": "设置里搜「悬浮窗」，有的手机叫「显示在其他应用上层」。把不要的关掉。微信、QQ 的消息气泡也用这个，别关错。", "note": ""}, {"rule": "R_PERM_COMBO", "score": 14, "title": "它要的东西太多了", "why": "它一口气要了位置、后台位置、短信、短信。单看每一样都有理由，但一个软件要这么多，就说不通了。", "how": "设置 → 应用 → 找到它 → 权限。把它用不上的关掉。关完它可能说功能受限，这是正常的。", "note": ""}, {"rule": "R_OLDSDK", "score": 12, "title": "这软件七八年没更新了", "why": "它是按老标准做的。新版安卓管不住老软件，该拦的地方拦不住。正常更新的软件不会这样。", "how": "不是非用不可的话，去应用商店装个新版，或者换个别的。", "note": ""}, {"rule": "R_OUTBOUND", "score": 12, "title": "它在往外发东西", "why": "它现在连着 1.44.27.60:54465。一般软件走常见的通道，这个连接不太寻常。也可能只是游戏服务器或者消息推送。", "how": "设置 → 应用 → 它 → 流量使用情况，看后台用了多少。你完全不用它流量还在涨，那就有问题。", "note": ""}, {"rule": "R_SIDELOAD", "score": 8, "title": "它不是从应用商店装的", "why": "它是从网页上、或者别人发来的安装包装的。这种方式本身没毛病，但出了事商店不管。", "how": "想想最近有没有装过别人发的软件。想不起来就看安装日期，跟那几天干过的事对一下。", "note": ""}, {"rule": "R_BOOT", "score": 8, "title": "手机一开机它自己就跑", "why": "你没打开它，它也在后台待着。这种软件多了，手机会变慢、更费电。", "how": "设置 → 应用 → 找到它 → 电池（有的手机叫自启动）。把「允许自启动」和「允许后台活动」关掉。", "note": ""}]}, {"pkg": "com.wifi.master.key", "name": "com.wifi.master.key", "title": "桌面上没有它的图标", "level": "check", "score": 35, "has_icon": false, "is_system": false, "installer_label": "", "installed_at": "2025-12-20", "installed_days": 313, "signals": [{"rule": "R_HIDDEN", "score": 16, "title": "桌面上没有它的图标", "why": "这不一定有问题。输入法、主题、手表配套的软件本来就没图标。但你要是完全不记得装过，就值得看一眼。", "how": "设置 → 应用，搜这个名字，看安装日期。想想那几天有没有在网页上、群里点过「下载安装」。", "note": ""}, {"rule": "R_OVERLAY", "score": 16, "title": "它能在你手机上随便弹广告", "why": "你正刷着微信、看着视频，它能在最上面盖一层，还关不掉。那些莫名其妙的浮窗就是这么来的。", "how": "设置里搜「悬浮窗」，有的手机叫「显示在其他应用上层」。把不要的关掉。微信、QQ 的消息气泡也用这个，别关错。", "note": ""}, {"rule": "R_SIDELOAD", "score": 8, "title": "它不是从应用商店装的", "why": "它是从网页上、或者别人发来的安装包装的。这种方式本身没毛病，但出了事商店不管。", "how": "想想最近有没有装过别人发的软件。想不起来就看安装日期，跟那几天干过的事对一下。", "note": ""}, {"rule": "R_BOOT", "score": 8, "title": "手机一开机它自己就跑", "why": "你没打开它，它也在后台待着。这种软件多了，手机会变慢、更费电。", "how": "设置 → 应用 → 找到它 → 电池（有的手机叫自启动）。把「允许自启动」和「允许后台活动」关掉。", "note": ""}]}, {"pkg": "com.video.player.hd", "name": "一个视频软件", "title": "桌面上没有它的图标", "level": "watch", "score": 30, "has_icon": false, "is_system": false, "installer_label": "", "installed_at": "2026-02-14", "installed_days": 257, "signals": [{"rule": "R_HIDDEN", "score": 16, "title": "桌面上没有它的图标", "why": "这不一定有问题。输入法、主题、手表配套的软件本来就没图标。但你要是完全不记得装过，就值得看一眼。", "how": "设置 → 应用，搜这个名字，看安装日期。想想那几天有没有在网页上、群里点过「下载安装」。", "note": ""}, {"rule": "R_OVERLAY", "score": 16, "title": "它能在你手机上随便弹广告", "why": "你正刷着微信、看着视频，它能在最上面盖一层，还关不掉。那些莫名其妙的浮窗就是这么来的。", "how": "设置里搜「悬浮窗」，有的手机叫「显示在其他应用上层」。把不要的关掉。微信、QQ 的消息气泡也用这个，别关错。", "note": ""}, {"rule": "R_SIDELOAD", "score": 8, "title": "它不是从应用商店装的", "why": "它是从网页上、或者别人发来的安装包装的。这种方式本身没毛病，但出了事商店不管。", "how": "想想最近有没有装过别人发的软件。想不起来就看安装日期，跟那几天干过的事对一下。", "note": ""}]}, {"pkg": "com.cleanpro.boost", "name": "一个清理加速软件", "title": "桌面上没有它的图标", "level": "watch", "score": 26, "has_icon": false, "is_system": false, "installer_label": "小米安装器", "installed_at": "2026-10-02", "installed_days": 27, "signals": [{"rule": "R_HIDDEN", "score": 16, "title": "桌面上没有它的图标", "why": "这不一定有问题。输入法、主题、手表配套的软件本来就没图标。但你要是完全不记得装过，就值得看一眼。", "how": "设置 → 应用，搜这个名字，看安装日期。想想那几天有没有在网页上、群里点过「下载安装」。", "note": ""}, {"rule": "R_OVERLAY", "score": 16, "title": "它能在你手机上随便弹广告", "why": "你正刷着微信、看着视频，它能在最上面盖一层，还关不掉。那些莫名其妙的浮窗就是这么来的。", "how": "设置里搜「悬浮窗」，有的手机叫「显示在其他应用上层」。把不要的关掉。微信、QQ 的消息气泡也用这个，别关错。", "note": ""}]}, {"pkg": "com.tianqi.weather.free", "name": "一个天气软件", "title": "它要的东西太多了", "level": "watch", "score": 26, "has_icon": true, "is_system": false, "installer_label": "", "installed_at": "2025-11-03", "installed_days": 360, "signals": [{"rule": "R_PERM_COMBO", "score": 14, "title": "它要的东西太多了", "why": "它一口气要了位置、后台位置、通讯录。单看每一样都有理由，但一个软件要这么多，就说不通了。", "how": "设置 → 应用 → 找到它 → 权限。把它用不上的关掉。关完它可能说功能受限，这是正常的。", "note": ""}, {"rule": "R_OLDSDK", "score": 12, "title": "这软件七八年没更新了", "why": "它是按老标准做的。新版安卓管不住老软件，该拦的地方拦不住。正常更新的软件不会这样。", "how": "不是非用不可的话，去应用商店装个新版，或者换个别的。", "note": ""}, {"rule": "R_SIDELOAD", "score": 8, "title": "它不是从应用商店装的", "why": "它是从网页上、或者别人发来的安装包装的。这种方式本身没毛病，但出了事商店不管。", "how": "想想最近有没有装过别人发的软件。想不起来就看安装日期，跟那几天干过的事对一下。", "note": ""}, {"rule": "R_BOOT", "score": 8, "title": "手机一开机它自己就跑", "why": "你没打开它，它也在后台待着。这种软件多了，手机会变慢、更费电。", "how": "设置 → 应用 → 找到它 → 电池（有的手机叫自启动）。把「允许自启动」和「允许后台活动」关掉。", "note": ""}]}]};
+const KNOWN = DATA.name_map || {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ── 图标库 ── */
+const ICON = {
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.6 2.6L16 9.5"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+  lock:'<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  eye:'<path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.8"/>',
+  bell:'<path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/>',
+  ghost:'<path d="M5 20V9a7 7 0 0 1 14 0v11l-2.3-2-2.4 2-2.3-2-2.3 2L5 20Z"/><path d="M9.5 10.5h.01M14.5 10.5h.01"/>',
+  window:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M8 6V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-1"/>',
+  pin:'<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/>',
+  download:'<path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/>',
+  power:'<path d="M12 3v9"/><path d="M7.5 6.3a8 8 0 1 0 9 0"/>',
+  cert:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><circle cx="12" cy="14" r="2"/>',
+  flask:'<path d="M10 3v5L5 19a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 19L14 8V3"/><path d="M9 3h6M7 14h10"/>',
+  key:'<circle cx="8" cy="8" r="4"/><path d="M11 11l9 9M17 17l2-2M20 20l1.5-1.5"/>',
+  skull:'<path d="M12 2a8 8 0 0 0-8 8c0 2.6 1.4 4.6 3 5.8V19a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3.2c1.6-1.2 3-3.2 3-5.8a8 8 0 0 0-8-8Z"/><path d="M9 11h.01M15 11h.01M10 16v2M14 16v2"/>',
+  users:'<path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 20v-2a4 4 0 0 0-3-3.9"/>',
+  android:'<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/>',
+  apple:'<path d="M16 3a1 1 0 0 1 1 1v3h3a1 1 0 0 1 0 2h-3v3a1 1 0 0 1-2 0V9h-3a1 1 0 0 1 0-2h3V4a1 1 0 0 1 1-1Z"/>',
+  clock2:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2"/>',
+  q:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.9.8-.9 1.5v.5M12 17h.01"/>',
+  x:'<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>'
+};
+const svg = (name, cls) => '<svg viewBox="0 0 24 24"' + (cls?' class="'+cls+'"':'') + '>' + (ICON[name]||ICON.q) + '</svg>';
+
+/* ── 规则 → 图标 + 短标签。报告里不出现规则 ID，只出现人话 ── */
+const RULES = {
+  R_ADMIN:      ['lock',     '拦卸载',   'red'],
+  I_ENTERPRISE: ['cert',     '非商店装', 'red'],
+  R_BLACKLIST:  ['skull',    '监视软件', 'red'],
+  I_BLACKLIST:  ['skull',    '监视软件', 'red'],
+  R_A11Y:       ['eye',      '看屏幕',   'red'],
+  R_CAMO:       ['ghost',    '伪装系统', 'red'],
+  I_PERM_FLOOD: ['key',      '权限太多', 'amber'],
+  R_NOTIF:      ['bell',     '读通知',   'amber'],
+  R_BG_LOC:     ['pin',      '后台定位', 'amber'],
+  I_BG_TRACK:   ['pin',      '后台跟人', 'amber'],
+  R_HIDDEN:     ['ghost',    '没图标',   'amber'],
+  R_OVERLAY:    ['window',   '弹窗',     'amber'],
+  R_PERM_COMBO: ['key',      '权限太多', 'amber'],
+  R_OLDSDK:     ['clock',    '久未更新', 'blue'],
+  R_OUTBOUND:   ['globe',    '连外面',   'blue'],
+  R_SIDELOAD:   ['download', '非商店装', 'blue'],
+  R_BOOT:       ['power',    '开机自启', 'blue'],
+  I_PERM_WIDE:  ['key',      '权限偏多', 'blue'],
+  I_LOCAL_NET:  ['globe',    '看局域网', 'blue'],
+  I_QUERY_MANY: ['users',    '数你装了啥', 'blue'],
+  I_BETA:       ['flask',    '测试版',   'blue']
+};
+const ruleOf = r => RULES[r] || ['q', '有点情况', 'blue'];
+
+/* 拿到关键权限但属于正常用途的，主动说明，免得用户误关 */
+const BENIGN = [
+  ['com.google.android.gms', 'Google 查找手机，关掉会找不到手机'],
+  ['com.miui.cloudservice', '小米云服务，关掉后手机丢了找不回'],
+  ['com.miui.finddevice', '小米查找设备，建议保留'],
+  ['com.huawei.hwid', '华为账号与查找设备，建议保留'],
+  ['com.hihonor.findmydevice', '荣耀查找设备，建议保留'],
+  ['com.coloros.findmyphone', 'OPPO 查找手机，建议保留'],
+  ['com.vivo.findphone', 'vivo 查找手机，建议保留'],
+  ['com.samsung.android.fmm', '三星查找手机，建议保留'],
+  ['com.tencent.mm', '微信，消息气泡要用'],
+  ['com.tencent.xin', '微信，内置浏览器和小程序要用'],
+  ['com.liguangming.Shadowrocket', '代理工具，本行就是接管流量'],
+  ['com.tencent.mobileqq', 'QQ，消息气泡要用'],
+  ['com.sohu.inputmethod', '输入法，语音输入要用'],
+  ['com.sogou.input', '输入法，语音输入要用'],
+  ['com.iflytek', '输入法，语音输入要用'],
+  ['com.baidu.input', '输入法，语音输入要用'],
+  ['com.google.android.marvin', 'TalkBack 屏幕朗读，它本身是无障碍工具']
+];
+const benignNote = p => { const h = BENIGN.find(b => String(p).startsWith(b[0])); return h ? h[1] : null; };
+const prettyName = p => KNOWN[p] || '';
+
+/* ── 头部 ── */
+(function(){
+  const d = DATA.device || {};
+  const brand = d.brand || d.manufacturer || '';
+  const model = d.model || '';
+  const name = model.toLowerCase().includes(brand.toLowerCase()) ? model : (brand + ' ' + model);
+  $('devname').textContent = (name.trim() || '这台手机') + ' 的体检结果';
+
+  const line = [];
+  const os = d.os || ('iPhone ' + (d.ios || ''));
+  if (String(os).trim()) line.push(svg('android') + '<span>' + esc(os) + '</span>');
+  // iPhone 上系统自带的两百多个不用摆给用户看，只数第三方的
+  if (DATA.summary && DATA.summary.total_apps){
+    const n = (DATA.platform === 'ios' && DATA.summary.third_party) ? DATA.summary.third_party : DATA.summary.total_apps;
+    line.push(svg('shield') + '<span>' + n + ' 个软件</span>');
+  }
+  if (d.scanned_at) line.push(svg('clock2') + '<span>' + esc(String(d.scanned_at).slice(0,10)) + '</span>');
+  $('devline').innerHTML = line.join('');
+
+  const label = {android:'Android 手机', harmony:'鸿蒙手机', ios:'iPhone'}[DATA.platform] || '手机';
+  $('eyebrow').textContent = label + ' 体检报告 · 只看不改';
+})();
+
+/* ── 结论 + 分布条 ── */
+(function(){
+  const v = DATA.verdict || {};
+  const s = DATA.summary || {};
+  // 可选项没看不该算进"没看"，否则用户明明只打算核三项，条子上却挂着五个灰格
+  const man = (DATA.manual_checks || []).filter(m => m.tier !== 'optional');
+  // 人工核对的结果也算进总数，否则标题说有 2 项要处理、条子上却是全绿
+  const mYes = man.filter(m => m.answer === 'yes').length;
+  const mSkip = man.filter(m => m.answer !== 'yes' && m.answer !== 'no').length;
+  const hi = (s.high||0) + mYes, ck = s.check||0, wa = s.watch||0;
+  const base = (DATA.platform === 'ios' && s.third_party) ? s.third_party : (s.total_apps||0);
+  const total = Math.max(base + man.length, hi+ck+wa+mSkip);
+  const gray = Math.min(mSkip, Math.max(0, total - hi - ck - wa));
+  const ok = Math.max(0, total - hi - ck - wa - gray);
+
+  const tone = v.tone || (hi?'bad':(ck?'warn':'ok'));
+  $('hero').className = 'hero ' + tone;
+  $('hero-ico').innerHTML = svg(tone==='bad'?'alert':(tone==='warn'?'alert':'check'));
+
+  // 标题里的数字放大
+  const hl = v.headline || '检查完成';
+  $('v-head').innerHTML = esc(hl).replace(/(\d+)/, '<em>$1</em>');
+  $('v-detail').textContent = v.detail || '';
+
+  // 分布条：只画有量的段
+  const need = hi + ck;
+  const seg = (cls, n) => n ? '<i class="'+cls+'" style="width:'+(n/total*100).toFixed(2)+'%"></i>' : '';
+  let bar = seg('h',hi) + seg('c',ck) + seg('w',wa) + seg('g',gray) + seg('o',ok);
+  if (!bar) bar = '<i class="o" style="width:100%"></i>';
+  $('dist').innerHTML = bar;
+
+  const LG = [
+    ['var(--red)',   hi, '要处理',  hi ? 'now' : ''],
+    ['var(--amber)', ck, '看一眼',  ck ? '' : ''],
+    ['var(--blue)',  wa, '知道就行', ''],
+    ['#39424d',      gray, '没看', ''],
+    ['rgba(78,203,113,.6)', ok, '其余没事', '']
+  ].filter(x => x[1] > 0);
+
+  $('legend').innerHTML = LG.map(([color,n,text]) =>
+    '<span><i style="background:'+color+'"></i>' + esc(text) +
+    (n ? ' <b>'+n+'</b>' : '') + '</span>'
+  ).join('');
+})();
+
+/* ── 应用卡片 ── */
+(function(){
+  const list = (DATA.findings || []).filter(f => f.level !== 'watch');
+  const watch = (DATA.findings || []).filter(f => f.level === 'watch');
+  const label = DATA.level_labels || {};
+
+  const render = f => {
+    const sigs = f.signals || [];
+
+    // 能力图标：所有信号都出方块，一眼看全
+    const caps = sigs.map(s => {
+      const [ic, tag, color] = ruleOf(s.rule);
+      const known = BENIGN.some(b => String(f.pkg).startsWith(b[0]));
+      return '<div class="cap ' + color + '" title="' + esc(s.title) + '">'
+        + svg(ic) + '<b>' + esc(tag) + '</b></div>';
+    }).join('');
+
+    const detail = s => {
+      const [ic, tag] = ruleOf(s.rule);
+      return '<div class="block"><div class="label why">'
+        + svg(ic) + esc(tag) + ' · 为什么</div>'
+        + '<p>' + esc(s.why) + '</p>'
+        + (s.note ? '<div class="note">' + esc(s.note) + '</div>' : '')
+        + '</div>'
+        + '<div class="block"><div class="label how">' + svg('check') + '怎么办</div>'
+        + '<p>' + esc(s.how) + '</p></div>';
+    };
+
+    let body = sigs.map(detail).join('');
+    if (sigs.length > 2){
+      body = sigs.slice(0,2).map(detail).join('')
+        + '<details class="more"><summary>还有 ' + (sigs.length-2) + ' 条</summary>'
+        + '<div class="more-body">' + sigs.slice(2).map(detail).join('') + '</div></details>';
+    }
+
+    const shown = f.name || prettyName(f.pkg);
+    // 名字本身就是一串包名，说明它是伪装成系统组件的、没法翻译成用途的软件。
+    // 这种时候要把它按「代号」显示，别让它看起来像个正经软件名。
+    const asCode = /^[A-Za-z][\w]*(\.[\w]+)+$/.test(shown || '');
+    const initial = (shown || f.pkg).replace(/^com\./,'').charAt(0).toUpperCase();
+    const sub = [];
+    if (f.installer_label) sub.push(esc(f.installer_label));
+    if (!f.has_icon) sub.push('桌面找不到');
+    if (f.installed_days != null) sub.push(f.installed_days + ' 天前装的');
+    if (asCode && (f.signals||[]).some(s => s.rule === 'R_CAMO')) sub.push('这串就是它冒充的名字');
+
+    return '<div class="app ' + f.level + '">'
+      + '<div class="app-head">'
+      +   '<div class="app-ico">' + esc(initial) + '</div>'
+      +   '<div class="app-main">'
+      +     '<div class="app-name">'
+      +       (shown ? (asCode ? '<span class="mono">' + esc(shown) + '</span>' : esc(shown))
+                      : '<span class="mono" style="font-size:17px">' + esc(f.pkg) + '</span>')
+      +       '<span class="tag ' + f.level + '">' + esc(label[f.level]||'') + '</span></div>'
+      +     (sub.length ? '<div class="app-sub">' + sub.join(' · ') + '</div>' : '')
+      +   '</div>'
+      + '</div>'
+      + '<div class="caps" style="--n:' + Math.min(sigs.length, 9) + '">' + caps + '</div>'
+      + '<details><summary>哪里不对 · 怎么办</summary>'
+      +   '<div class="body">' + body + '</div>'
+      + '</details></div>';
+  };
+
+  if (!list.length){
+    $('find-sec').style.display = 'none';
+  } else {
+    $('findings').innerHTML = list.map(render).join('');
+  }
+
+  if (watch.length){
+    $('quiet-sec').style.display = 'block';
+    $('quiet').innerHTML = watch.map(f => {
+      const tags = (f.signals||[]).map(s => {
+        const [ic] = ruleOf(s.rule);
+        return '<span class="mini">' + svg(ic) + esc(ruleOf(s.rule)[1]) + '</span>';
+      }).join('');
+      return '<div class="qrow"><b>' + esc(f.name || prettyName(f.pkg) || f.pkg) + '</b>'
+        + '<div class="minis">' + tags + '</div></div>';
+    }).join('');
+  }
+})();
+
+/* ── 人工核对 ── */
+(function(){
+  const list = DATA.manual_checks || [];
+  if (!list.length) return;
+  $('manual-sec').style.display = 'block';
+
+  const order = {yes:0, '':1, skip:1, no:2};
+  list.sort((a,b) => (order[a.answer] ?? 1) - (order[b.answer] ?? 1));
+
+  const card = m => {
+    const cls = m.answer === 'yes' ? 'yes' : (m.answer === 'no' ? 'no' : 'unknown');
+    const ic = m.answer === 'yes' ? 'x' : (m.answer === 'no' ? 'check' : 'q');
+    let desc;
+    if (m.note) desc = m.note;
+    else if (m.answer === 'yes') desc = m.how || m.desc || '';
+    else if (m.answer === 'no') desc = m.ok || '这项没问题';
+    else desc = m.shot ? ('去这一页：' + m.shot) : '这次没看';
+    return '<div class="chk ' + cls + '">'
+      + '<div class="chk-top"><div class="chk-ico">' + svg(ic) + '</div>'
+      + '<div class="chk-title">' + esc(m.title) + '</div></div>'
+      + (desc ? '<div class="chk-desc">' + esc(desc) + '</div>' : '')
+      + '</div>';
+  };
+
+  // 必查 3 项单独摆出来，其余收进折叠——不然一打开全是灰卡片，反而不知道从哪下手
+  const must = list.filter(m => m.tier !== 'optional');
+  const opt  = list.filter(m => m.tier === 'optional');
+  $('manual').innerHTML = (must.length ? must : list).map(card).join('');
+
+  if (opt.length && must.length){
+    $('manual-opt').innerHTML = '<details class="opt-more"><summary>想更彻底的话，再看这 '
+      + opt.length + ' 项</summary><div class="checks" style="margin-top:13px">'
+      + opt.map(card).join('') + '</div></details>';
+  } else if (opt.length){
+    $('manual').innerHTML = opt.map(card).join('');
+  }
+
+  const pend = must.filter(m => !m.answer).length;
+  const sub = document.querySelector('#manual-sec .sec-sub');
+  if (sub && pend) sub.textContent = '有 ' + pend + ' 项在设置里，机器读不到，得你自己看一眼';
+})();
+
+/* ── 控制权 ── */
+(function(){
+  const cps = (DATA.control_points || []).filter(c => (c.items||[]).length);
+  if (!cps.length){ $('ctrl-sec').style.display = 'none'; return; }
+  const ICONS = {admin:'lock', a11y:'eye', notif:'bell', overlay:'window',
+                 vpn:'globe', bg_loc:'pin', nosy:'key', counter:'users'};
+  $('ctrl').innerHTML = cps.map(c => {
+    const items = c.items.map(p => {
+      const nm = prettyName(p) || p;
+      // 悬停给出包名：叫法好认，包名能在设置里搜到
+      const tip = [nm !== p ? p : '', benignNote(p) || ''].filter(Boolean).join(' · ');
+      return '<li class="' + (benignNote(p) ? 'known' : '') + '" title="' + esc(tip) + '">' + esc(nm) + '</li>';
+    }).join('');
+    return '<div class="ctrl-box">'
+      + '<div class="ctrl-top"><div class="ctrl-ico">' + svg(ICONS[c.key]||'shield') + '</div>'
+      + '<div><div class="ctrl-t">' + esc(c.title) + '</div>'
+      + '<div class="ctrl-n">' + c.items.length + ' 个软件</div></div></div>'
+      + '<ul class="ctrl-list">' + items + '</ul>'
+      + (c.desc ? '<div class="ctrl-desc">' + esc(c.desc) + '</div>' : '')
+      + '</div>';
+  }).join('');
+})();
+
+/* ── 权限条 ── */
+(function(){
+  const ps = (DATA.permissions || []).filter(p => (p.perms||[]).length);
+  if (!ps.length) return;
+  $('perm-sec').style.display = 'block';
+  if (DATA.platform === 'ios'){
+    const sub = document.querySelector('#perm-sec .sec-sub');
+    if (sub) sub.textContent = '它自己声明要打听多少事。你真的给了没给，得去设置里对';
+  }
+  const max = Math.max(...ps.map(p => p.perms.length));
+  ps.sort((a,b) => b.perms.length - a.perms.length);
+  $('perms').innerHTML = ps.slice(0,10).map(p => {
+    const nm = p.name || prettyName(p.pkg) || p.pkg;
+    const w = Math.round(p.perms.length / max * 100);
+    const tags = p.perms.slice(0,7).map(x => '<span>' + esc(x) + '</span>').join('')
+      + (p.perms.length > 7 ? '<span class="more">还有 ' + (p.perms.length-7) + ' 样</span>' : '');
+    return '<div class="perm-item">'
+      + '<div class="perm-row">'
+      +   '<div class="perm-name">' + esc(nm) + '</div>'
+      +   '<div class="perm-bar"><i style="width:' + w + '%"></i></div>'
+      +   '<div class="perm-n">' + p.perms.length + '</div>'
+      + '</div>'
+      + '<div class="perm-tags">' + tags + '</div></div>';
+  }).join('');
+})();
+
+/* ── 没查到的地方 ── */
+(function(){
+  const c = DATA.completeness || {};
+  if (!c.failed) return;
+  $('miss-sec').style.display = 'block';
+  $('miss').innerHTML = (c.failed_nice || []).map(x => '<div class="row">' + svg('q') + esc(x) + '</div>').join('')
+    + '<div class="row">' + svg('alert') + '<small>' + esc(c.note || '') + '</small></div>';
+})();
+
+/* ── 能说明什么 ── */
+(function(){
+  const isIOS = DATA.platform === 'ios';
+  const c = DATA.completeness || {};
+  const items = [
+    ['yes', 'check',  '能看到',      '哪些软件拿了大权力'],
+    ['yes', 'q',      '能对得上',    '每条都有依据，你自己能核'],
+    ['no',  'skull',  '不是杀毒软件',  '没有病毒库，只看做事说不说得通'],
+    ['no',  'clock2', '只看这一刻',  '手机随时在变，它不会一直盯'],
+  ];
+  if (isIOS){
+    items[0] = ['yes', 'check', '能看到', '哪些软件要了哪些权限、能不能在后台跟着你'];
+    items.push(['no', 'apple', '看到的是「它要什么」', '不是「你给没给」。那得你自己去设置里对']);
+  }
+  if (c.failed) items.push(['no','alert','有 ' + c.failed + ' 项没读到','那部分这次没看到']);
+  $('notice').innerHTML = items.map(([kind, ic, t, d]) =>
+    '<div class="fact ' + kind + '">' + svg(ic) + '<b>' + esc(t) + '</b><p>' + esc(d) + '</p></div>'
+  ).join('');
+})();
+
+(function(){
+  const p = {android:'Android', harmony:'HarmonyOS', ios:'iPhone'}[DATA.platform] || '';
+  $('footer').innerHTML = '生成于 ' + esc(DATA.generated_at) + (p ? ' · ' + p : '')
+    + '<br>整个过程只看不动。没删软件，没改设置。';
+})();
+</script>
+</body>
+</html>
