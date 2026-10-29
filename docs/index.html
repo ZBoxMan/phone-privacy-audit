@@ -166,6 +166,21 @@ pre .p{color:#f5c563}
 .gap-line::before,.gap-line::after{content:"";height:1px;background:var(--line);flex:1}
 
 .chks{display:grid;gap:11px;margin-top:16px}
+.chk-more{margin-top:18px}
+.chk-more>summary{background:var(--card2)}
+.chk-more-sub{padding:0 17px 4px;font-size:15.5px;color:var(--dim);line-height:1.7}
+.chk-more .chks{padding:0 17px 17px;margin-top:4px}
+
+/* ───────── 下载条 ───────── */
+.dl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-top:18px}
+.dl-t{flex:1;min-width:190px}
+.dl-t b{display:block;font-size:16.5px;font-weight:650;letter-spacing:-.01em}
+.dl-t span{font-size:14.5px;color:var(--dim)}
+.dl a{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;transition:.15s;white-space:nowrap}
+.dl a.p{background:#3b82f6;color:#fff}
+.dl a.p:hover{background:#2f74e0}
+.dl a.s{background:var(--card2);color:var(--muted);border:1px solid var(--line)}
+.dl a.s:hover{color:var(--text);border-color:#3d4653}
 .chk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;display:flex;flex-direction:column;gap:9px}
 .chk.hot{border-color:rgba(240,180,60,.34);background:linear-gradient(165deg,rgba(240,180,60,.07),rgba(24,28,34,0))}
 .chk-top{display:flex;align-items:center;gap:10px}
@@ -512,7 +527,7 @@ footer b{color:var(--muted);font-weight:600}
         <div class="li"><svg><use href="#i-x"/></svg><span>不替你点任何按钮</span></div>
         <div class="li"><svg><use href="#i-x"/></svg><span>不是杀毒软件，没有病毒库可以比对</span></div>
         <div class="li"><svg><use href="#i-x"/></svg><span>看不到你的聊天记录、照片、相册</span></div>
-        <div class="li"><svg><use href="#i-x"/></svg><span>iPhone 设置里那 8 项，只能你自己核对</span></div>
+        <div class="li"><svg><use href="#i-x"/></svg><span>iPhone 设置里那 3 项，只能你自己核对</span></div>
         <div class="li"><svg><use href="#i-x"/></svg><span>只反映检查那一刻，过后会变</span></div>
       </div>
     </div>
@@ -526,6 +541,15 @@ footer b{color:var(--muted);font-weight:600}
         <h2>三步：连手机，跑命令，看报告</h2>
         <p class="sec-sub">命令都在技能包目录里执行。复制粘贴就行，不用改。</p>
       </div>
+    </div>
+
+    <div class="dl">
+      <div class="dl-t">
+        <b>先把代码拿到手</b>
+        <span>国内网络直接下 zip，解压就能用，不用 git clone</span>
+      </div>
+      <a class="p" href="https://phone-checkup.app.workbuddy.host/phone-privacy-audit.zip?sharecode=5HBPD2YF6U">下载 zip</a>
+      <a class="s" href="https://github.com/ZBoxMan/phone-privacy-audit" target="_blank" rel="noopener">GitHub 仓库</a>
     </div>
 
     <div class="steps">
@@ -546,11 +570,11 @@ footer b{color:var(--muted);font-weight:600}
           <div class="step-ico"><svg><use href="#i-terminal"/></svg></div>
           <div>
             <div class="step-k">第 2 步</div>
-            <div class="step-t">跑采集命令</div>
+            <div class="step-t">跑一条命令</div>
           </div>
         </div>
-        <p>按机型选一条。安卓一般 20 到 60 秒跑完。</p>
-        <div class="step-note">只用一条，不要三条都跑。</div>
+        <p>不用挑机型，它自己认。安卓一般 20 到 60 秒跑完。</p>
+        <div class="step-note">就一条，采集、归因、出报告全在里面。</div>
       </div>
 
       <div class="step">
@@ -558,51 +582,46 @@ footer b{color:var(--muted);font-weight:600}
           <div class="step-ico"><svg><use href="#i-file"/></svg></div>
           <div>
             <div class="step-k">第 3 步</div>
-            <div class="step-t">出报告</div>
+            <div class="step-t">看报告</div>
           </div>
         </div>
-        <p>先归因，再生成 HTML。打开 <span class="mono">report.html</span> 就能看。</p>
+        <p>跑完会告诉你报告在哪个路径。打开就是一份 HTML。</p>
         <div class="step-note">报告是单个文件，能发给别人，手机上也能打开。</div>
       </div>
     </div>
 
     <div style="margin-top:14px">
       <div class="code">
-        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 1 条：进目录</b></div>
-<pre><span class="k">cd</span> ~/.workbuddy/skills/phone-privacy-audit</pre>
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 1 条：进目录，装依赖（只有 iPhone 要装）</b></div>
+<pre><span class="k">cd</span> phone-privacy-audit
+
+<span class="c"># iPhone 才需要这一行：缺的是读设备用的库</span>
+<span class="k">python3</span> -m venv .venv
+<span class="k">.venv/bin/pip</span> install -r requirements.txt</pre>
+        <div class="code-foot"><svg><use href="#i-info"/></svg><span>Windows 上这两行换成 <b>python -m venv .venv</b> 和 <b>.venv\Scripts\pip install -r requirements.txt</b>。安卓和鸿蒙跳过这段，系统自带的 python 就够。</span></div>
       </div>
 
       <div class="code" style="margin-top:12px">
-        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 2 条：按机型选一条</b></div>
-<pre><span class="c"># 安卓</span>
-<span class="k">bash</span> scripts/collect_android.sh \
-  ./phone-audit
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 2 条：一条命令跑完</b></div>
+<pre><span class="c"># macOS / Linux</span>
+<span class="k">python3</span> scripts/run.py ./phone-audit
 
-<span class="c"># 鸿蒙（脚本自己判断走 adb 还是 hdc）</span>
-<span class="k">bash</span> scripts/collect_harmony.sh \
-  ./phone-audit
-
-<span class="c"># iPhone（必须用技能包自带的 python）</span>
-<span class="k">.venv/bin/python</span> \
-  scripts/collect_ios.py ./phone-audit</pre>
-        <div class="code-foot"><svg><use href="#i-info"/></svg><span>行尾的 \ 表示这条命令还没写完。整段一起复制，粘进终端就行。</span></div>
+<span class="c"># Windows：双击仓库里的 run.bat 也行</span>
+<span class="k">run.bat</span></pre>
+        <div class="code-foot"><svg><use href="#i-check"/></svg><span>它自己认手机，认完就采集、归因、出报告。<b>不用再跑第二条命令。</b></span></div>
       </div>
 
       <div class="code" style="margin-top:12px">
-        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 3 条：出报告</b></div>
-<pre><span class="k">python3</span> scripts/analyze.py ./phone-audit
-<span class="k">python3</span> scripts/build_report.py \
-  ./phone-audit
-
-<span class="c"># 然后打开这份文件</span>
-./phone-audit/report.html</pre>
+        <div class="code-top"><span class="dots"><i></i><i></i><i></i></span><b>第 3 条：iPhone 补上那 3 项之后，重出一版</b></div>
+<pre><span class="k">python3</span> scripts/run.py ./phone-audit --rebuild</pre>
+        <div class="code-foot"><svg><use href="#i-info"/></svg><span><b>--rebuild</b> 只重新归因和出报告，不碰手机。安卓 / 鸿蒙用不到这条。</span></div>
       </div>
 
       <div class="callout info">
         <div class="co-ico"><svg><use href="#i-info"/></svg></div>
         <div>
-          <h4>iPhone 在出报告前多一步</h4>
-          <p>采集完只会拿到软件清单。接着会给你一张 8 项的核对清单，你拿着手机照着走一圈，把结果填回去，再跑第 3 条命令。</p>
+          <h4>iPhone 会在中途停一下</h4>
+          <p>采集只拿得到软件清单。报告先出一版，同时告诉你还有 3 项在设置里、机器读不到：有没有陌生的描述文件、有没有别人的设备登着你的账号、位置共享给了谁。这三项看一眼，再跑第 3 条，报告就完整了。</p>
         </div>
       </div>
     </div>
@@ -696,7 +715,7 @@ footer b{color:var(--muted);font-weight:600}
         <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
         <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
         <div class="mx-cell"><span class="chip none"><svg><use href="#i-dash"/></svg></span></div>
-        <div class="mx-cell"><span class="chip txt">8 项</span></div>
+        <div class="mx-cell"><span class="chip txt">3 项</span></div>
       </div>
     </div>
 
@@ -705,13 +724,13 @@ footer b{color:var(--muted);font-weight:600}
       <span><span class="chip part"><svg><use href="#i-dash"/></svg></span>只能查到一部分</span>
       <span><span class="chip none"><svg><use href="#i-x"/></svg></span>查不到</span>
     </div>
-    <p style="font-size:14.5px;color:var(--dim);margin-top:9px;line-height:1.65">最后一行说的「人工项」：安卓和鸿蒙靠自动采集，不用你自己核对。iPhone 那 8 项没别的办法，只能你点一遍。</p>
+    <p style="font-size:14.5px;color:var(--dim);margin-top:9px;line-height:1.65">最后一行说的「人工项」：安卓和鸿蒙靠自动采集，不用你自己核对。iPhone 那 3 项没别的办法，只能你点一遍。</p>
 
     <div class="callout amber">
       <div class="co-ico"><svg><use href="#i-alert"/></svg></div>
       <div>
         <h4>iPhone 上是半自动，不是全自动</h4>
-        <p>自动只能拿到两样：装了什么、从哪装的。偷拍、偷听、被跟踪这类，答案全在设置里，而 iOS 不让任何工具读设置。所以剩下 8 项得你自己点。</p>
+        <p>自动只能拿到两样：装了什么、从哪装的。偷拍、偷听、被跟踪这类，答案全在设置里，而 iOS 不让任何工具读设置。所以剩下 3 项得你自己点。</p>
       </div>
     </div>
   </section>
@@ -771,8 +790,8 @@ footer b{color:var(--muted);font-weight:600}
       </div>
     </div>
 
-    <h3 style="font-size:19px;font-weight:700;margin:26px 0 4px;letter-spacing:-.01em">8 项人工核对</h3>
-    <p style="font-size:16px;color:var(--muted);line-height:1.65">拿着手机照着走一圈。每项三句话：在哪、什么算有问题、怎么处理。</p>
+    <h3 style="font-size:19px;font-weight:700;margin:26px 0 4px;letter-spacing:-.01em">3 项必查，5 项看情况</h3>
+    <p style="font-size:16px;color:var(--muted);line-height:1.65">报告里只把这 3 项留成待核对，因为它们是「别人动过你手机」最直接的痕迹。每项三句话：在哪、什么算有问题、怎么处理。</p>
 
     <div class="chks">
       <div class="chk">
@@ -808,6 +827,12 @@ footer b{color:var(--muted);font-weight:600}
         <div class="kv how"><b>怎么处理</b><span>点那个人 → 停止共享我的位置。对方会收到提示，是家人的话先说一声。</span></div>
       </div>
 
+    </div>
+
+    <details class="chk-more">
+      <summary>另外 5 项：也有问题，但没那么急</summary>
+      <p class="chk-more-sub">这 5 项一样会造成实际损失，只是不像上面 3 项那样直接指向「有人动过你手机」。有空再看。</p>
+      <div class="chks">
       <div class="chk hot">
         <div class="chk-top">
           <span class="chk-n">4</span>
@@ -862,7 +887,8 @@ footer b{color:var(--muted);font-weight:600}
         <div class="kv bad"><b>有问题</b><span>有你没设过的规则。它能做到「一到家就自动把位置发给某人」，设一次就长期有效，而且在设置里找不到。</span></div>
         <div class="kv how"><b>怎么处理</b><span>左滑，删掉。</span></div>
       </div>
-    </div>
+      </div>
+    </details>
 
     <p style="font-size:15px;color:var(--dim);margin-top:12px;line-height:1.7">顺序有讲究。第 1、2 项如果有问题，先处理完，再谈别的应用。描述文件和账号被人登录，优先级高于一切。</p>
 
@@ -871,7 +897,7 @@ footer b{color:var(--muted);font-weight:600}
       <div>
         <h4>别去 App Store 装「清理大师」「安全卫士」</h4>
         <p>iOS 不允许一个 App 读另一个 App 的数据。这类软件能扫的只有它自己的缓存，扫完给你看一堆没用的数字。</p>
-        <p>对偷拍、偷听、被跟踪，它们一点用都没有。真想查，看的就是上面那 8 项设置。</p>
+        <p>对偷拍、偷听、被跟踪，它们一点用都没有。真想查，看的就是上面那 3 项设置。</p>
       </div>
     </div>
 
@@ -959,12 +985,12 @@ footer b{color:var(--muted);font-weight:600}
 
     <details>
       <summary>我不是技术员，能跑得动吗？</summary>
-      <div class="faq-b">能。就三条命令，复制粘贴。<b>第 1 条进目录，第 2 条采集，第 3 条出报告。</b>中间不用改任何参数。</div>
+      <div class="faq-b">能。就一条命令，复制粘贴，路径参数默认就行。<b>采集、归因、出报告全在这一条里。</b>认得手机就不用你再做判断。</div>
     </details>
 
     <details>
       <summary>iPhone 能查出被监控吗？</summary>
-      <div class="faq-b">能查一部分，而且是最要紧的那部分。自动能看到的只有装了什么、从哪装的；被跟踪、被定位、被同步这类，答案全在那 8 项设置里，得你自己点一遍。</div>
+      <div class="faq-b">能查一部分，而且是最要紧的那部分。自动能看到的只有装了什么、从哪装的；被跟踪、被定位、被同步这类，答案全在那 3 项设置里，得你自己点一遍。</div>
     </details>
 
     <details>
@@ -974,7 +1000,7 @@ footer b{color:var(--muted);font-weight:600}
 
     <details>
       <summary>报告说没问题，是不是就安全了？</summary>
-      <div class="faq-b">不能这么理解。它只说明这次读到的这些，没凑成说得通的问题。<b>没读到的项不等于安全，只等于没看到。</b>iPhone 上尤其如此，那 8 项你自己没核对，就等于没查。</div>
+      <div class="faq-b">不能这么理解。它只说明这次读到的这些，没凑成说得通的问题。<b>没读到的项不等于安全，只等于没看到。</b>iPhone 上尤其如此，那 3 项你自己没核对，就等于没查。</div>
     </details>
 
     <details>
@@ -984,7 +1010,7 @@ footer b{color:var(--muted);font-weight:600}
 
     <details>
       <summary>Windows 电脑能用吗？</summary>
-      <div class="faq-b">能。安卓和鸿蒙装好 adb 就行。iPhone 在 Windows 上要先装 iTunes（或者苹果的设备驱动），不然电脑认不出手机。</div>
+      <div class="faq-b">能，Windows 是正经支持的：仓库根目录有 <span class="mono">run.bat</span>，双击就跑。安卓和鸿蒙装好 adb 就行；iPhone 要先装 iTunes（或者苹果的设备驱动），不然电脑认不出手机。</div>
     </details>
 
     <details>
@@ -994,7 +1020,7 @@ footer b{color:var(--muted);font-weight:600}
 
     <details>
       <summary>跑一遍要多久？</summary>
-      <div class="faq-b">安卓一般 20 到 60 秒。iPhone 采集只要几秒，但那 8 项人工核对要花你五分钟左右。</div>
+      <div class="faq-b">安卓一般 20 到 60 秒。iPhone 采集只要几秒，但那 3 项人工核对要花你两三分钟。</div>
     </details>
 
     <details>
@@ -1042,7 +1068,7 @@ footer b{color:var(--muted);font-weight:600}
     <b>手机体检</b> · 只读诊断，不代替你操作<br>
     采集结果和报告都在你自己电脑上。查完记得把 <span class="mono">./phone-audit</span> 目录收好。
     <div class="foot-meta">
-      <span>开源 · MIT License</span>
+      <span>WorkBuddy「1024 造物挑战」参赛作品</span>
       <span>安卓 · 鸿蒙 · iPhone</span>
     </div>
   </footer>

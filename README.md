@@ -4,6 +4,8 @@
 
 支持 **Android / HarmonyOS / iPhone**，全程只读，输出一份普通人能看懂的 HTML 报告。
 
+macOS、Linux、Windows 都能跑，同一份代码、同一条命令。
+
 > 只诊断，不代劳。不卸载、不改设置、不替你点任何按钮。
 
 ![安卓报告](docs/img/report-android.png)
@@ -37,22 +39,44 @@
 
 ## 三步用起来
 
+**第一步，拿到代码。**
+
 ```bash
 git clone https://github.com/ZBoxMan/phone-privacy-audit.git
 cd phone-privacy-audit
+```
 
-# iPhone 需要这一步，安卓/鸿蒙可以跳过（有系统自带的 python3 就够）
+GitHub 连不上就下压缩包，见下面的[国内怎么下](#国内网络怎么下)。
+
+**第二步，装依赖。只有 iPhone 需要：**
+
+```bash
+# macOS / Linux
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-然后插上手机，跑：
-
-```bash
-bash scripts/run.sh ./phone-audit
+```bat
+:: Windows
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
 ```
 
-`run.sh` 会自己认手机：iPhone 走 USB，安卓/鸿蒙走 adb/hdc。采集、分析、出报告一次跑完，20–60 秒。
+安卓和鸿蒙跳过这一步，系统自带的 python 就够。
+
+**第三步，插上手机，跑一条命令：**
+
+```bash
+# macOS / Linux
+python3 scripts/run.py ./phone-audit
+```
+
+```bat
+:: Windows，双击仓库里的 run.bat 也行
+run.bat
+```
+
+它自己认手机：iPhone 走 USB，安卓 / 鸿蒙走 adb / hdc。采集、归因、出报告一次跑完，20–60 秒。
 
 产物在 `./phone-audit/`：
 
@@ -63,6 +87,8 @@ phone-audit/
 └── report.html     给人看的报告，双击打开
 ```
 
+> `scripts/run.sh` 是同一个东西的旧入口，还留着，但新代码都在 `scripts/run.py`——Windows 上没有 bash，逻辑写死在 shell 里等于把 Windows 用户关在门外。
+
 ### 各平台准备
 
 | 平台 | 需要 | 手机上要做什么 |
@@ -72,6 +98,11 @@ phone-audit/
 | HarmonyOS NEXT | `hdc`（DevEco Studio 自带） | 打开开发者模式 → 允许调试 |
 | iPhone | 见下 | 插线后点「信任此电脑」，**手机上不用装任何东西** |
 
+Windows 上的两处不一样：
+
+- `adb` 要从 platform-tools 压缩包里解出来，把那个目录加进 PATH
+- iPhone 要先装 iTunes（或者只装苹果的「Apple Mobile Device Support」驱动），否则电脑认不出手机
+
 iPhone 需要 `pymobiledevice3`，装在仓库自带的 `.venv` 里：
 
 ```bash
@@ -79,6 +110,26 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pymobiledevice3 usbmux list   # 确认能看到设备
 ```
+
+## 国内网络怎么下
+
+GitHub 有时候打不开。三条备选，按顺手程度排：
+
+1. **直接下压缩包**（最快，国内可直连）：
+   <https://phone-checkup.app.workbuddy.host/phone-privacy-audit.zip?sharecode=5HBPD2YF6U>
+   解压出来就是完整仓库，不用 git，也不用配代理。
+2. **Release 包**：<https://github.com/ZBoxMan/phone-privacy-audit/releases/latest>
+   和上面同一份东西，走 GitHub 的 CDN，有时反而比 clone 稳。
+3. **先看再下**：<https://phone-checkup.app.workbuddy.host/?sharecode=5HBPD2YF6U>
+   说明页加两份脱敏样例报告，不插线就能看报告长什么样。
+
+pip 装 `pymobiledevice3` 慢的话换国内镜像：
+
+```bash
+.venv/bin/pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+想有个 Gitee 镜像是可以的——Gitee 支持从 GitHub 一键导入仓库，导入后在设置里打开「强制同步」，但**别把导入的仓库当主仓**，改动还在 GitHub 这边发。
 
 ## iPhone 那三项，机器读不到
 
@@ -167,14 +218,19 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 ```
 .
+├── run.bat                     Windows 入口：双击就跑
 ├── SKILL.md                    技能定义：规矩、分寸、话术
 ├── scripts/
-│   ├── run.sh                  一条命令跑完（自动认机型）
-│   ├── collect_android.sh      adb，约 30 个只读数据源
-│   ├── collect_harmony.sh      hdc，纯血鸿蒙走这条
+│   ├── run.py                  一条命令跑完（自动认机型，三平台同一份）
+│   ├── collect_common.py       找工具、带超时跑只读命令、写采集清单
+│   ├── collect_android.py      adb，约 30 个只读数据源
+│   ├── collect_harmony.py      hdc，纯血鸿蒙走这条
 │   ├── collect_ios.py          pymobiledevice3，async
+│   ├── run.sh                  兼容入口，内部 exec run.py
+│   ├── collect_android.sh      同上
+│   ├── collect_harmony.sh      同上
 │   ├── grab_shots.py           从相册只读拉截图（iPhone 核对用）
-│   ├── write_manifest.py       采集脚本收尾写 manifest.json
+│   ├── write_manifest.py       采集清单的命令行入口
 │   ├── analyze.py              规则引擎入口
 │   ├── phoneaudit/             规则引擎本体
 │   │   ├── vocab.py            词表：包名 → 人话、可信来源、敏感权限
@@ -191,7 +247,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 │   ├── guidebook.md            各厂商设置路径
 │   ├── manual-items.json       iPhone 人工核对项（文案唯一来源）
 │   └── audit-prompts.md        补充排查提示词
-├── tests/                      规则引擎回归测试 + 三套脱敏采集夹具
+├── tests/                      规则引擎回归测试 + 入口测试 + 三套脱敏夹具
 └── docs/                       样例报告与说明页
 ```
 
@@ -204,6 +260,13 @@ python3 -m unittest discover -s tests -v
 ```
 
 改了规则或词表，先跑这一条。夹具是手写的脱敏数据，不含任何真实设备信息。
+
+`tests/test_cli.py` 里有两类容易被改坏的承诺，做成了断言：
+
+- **只读**：采集清单里不能出现 `pm uninstall`、`settings put`、`appops set` 这类写操作
+- **跨平台**：venv 在 `bin/` 还是 `Scripts/` 都找得到，`--rebuild` 在没有采集结果时必须报错而不是出一份空报告
+
+CI 在 Ubuntu 和 Windows 上各跑一遍，Python 3.9 和 3.12。Windows 那一路是专门盯着「别再写出只能在 bash 里跑的东西」。
 
 ## 隐私
 
