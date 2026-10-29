@@ -7,16 +7,28 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: 规则引擎回归测试
+
+      - name: 规则引擎 + 入口回归测试
         run: python -m unittest discover -s tests -v
+
+      - name: 所有脚本能编译
+        run: python -m compileall -q scripts tests
+
       - name: 采集脚本语法检查
+        if: runner.os != 'Windows'
         run: bash -n scripts/*.sh
+
+      - name: 入口能起来
+        run: python scripts/run.py --help
