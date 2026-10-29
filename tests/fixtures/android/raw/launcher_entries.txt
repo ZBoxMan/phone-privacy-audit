@@ -1,0 +1,4 @@
+3 activities found:
+  com.tencent.mm/.ui.LauncherUI
+  com.android.settings/.Settings
+  com.tianqi.weather.free/.MainActivity

@@ -1,0 +1,7 @@
+package:/data/app/~~a/com.tencent.mm-1/base.apk=com.tencent.mm uid:10101
+package:/data/app/~~b/com.example.spy-1/base.apk=com.example.spy uid:10234
+package:/data/app/~~c/com.fake.systemservice-1/base.apk=com.fake.systemservice uid:10235
+package:/data/app/~~d/com.sogou.inputmethod-1/base.apk=com.sogou.inputmethod uid:10120
+package:/system/priv-app/Settings/Settings.apk=com.android.settings uid:1000
+package:/system/priv-app/GmsCore/GmsCore.apk=com.google.android.gms uid:10013
+package:/data/app/~~e/com.tianqi.weather.free-1/base.apk=com.tianqi.weather.free uid:10300

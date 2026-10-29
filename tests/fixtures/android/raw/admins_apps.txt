@@ -1,0 +1,3 @@
+2 receivers found:
+  com.google.android.gms/.mdm.receivers.MdmDeviceAdminReceiver
+  com.example.spy/.AdminReceiver

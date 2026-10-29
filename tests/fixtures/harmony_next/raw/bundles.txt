@@ -1,0 +1,5 @@
+ID: 100:
+	com.huawei.hmos.settings
+	com.huawei.hmos.photos
+	com.tencent.wechat
+	com.example.oddtool

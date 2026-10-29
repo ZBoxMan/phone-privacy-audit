@@ -1,0 +1,3 @@
+2 receivers found:
+  com.example.spy/.BootRx
+  com.tencent.mm/.booter.BootReceiver

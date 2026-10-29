@@ -1,0 +1,86 @@
+Packages:
+  Package [com.tencent.mm] (a1):
+    userId=10101
+    codePath=/data/app/~~a/com.tencent.mm-1
+    versionCode=2700 minSdk=23 targetSdk=33
+    versionName=8.0.50
+    firstInstallTime=2025-01-10 10:00:00
+    lastUpdateTime=2026-09-01 10:00:00
+    installerPackageName=com.xiaomi.market
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    runtime permissions:
+      android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ USER_SET ]
+      android.permission.CAMERA: granted=true, flags=[ USER_SET ]
+      android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SET ]
+      android.permission.READ_CONTACTS: granted=true, flags=[ USER_SET ]
+    User 0: ceDataInode=1 installed=true
+  Package [com.example.spy] (b2):
+    userId=10234
+    codePath=/data/app/~~b/com.example.spy-1
+    versionCode=5 minSdk=21 targetSdk=22
+    versionName=1.0
+    firstInstallTime=2026-10-01 12:00:00
+    lastUpdateTime=2026-10-01 12:00:00
+    installerPackageName=null
+    flags=[ HAS_CODE ]
+    runtime permissions:
+      android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ USER_SET ]
+      android.permission.ACCESS_BACKGROUND_LOCATION: granted=true, flags=[ USER_SET ]
+      android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SET ]
+      android.permission.READ_SMS: granted=true, flags=[ USER_SET ]
+      android.permission.READ_CONTACTS: granted=true, flags=[ USER_SET ]
+    User 0: ceDataInode=2 installed=true
+  Package [com.fake.systemservice] (c3):
+    userId=10235
+    codePath=/data/app/~~c/com.fake.systemservice-1
+    versionCode=1 minSdk=21 targetSdk=28
+    versionName=1.0
+    firstInstallTime=2026-10-20 12:00:00
+    lastUpdateTime=2026-10-20 12:00:00
+    installerPackageName=null
+    runtime permissions:
+      android.permission.CAMERA: granted=false, flags=[ USER_SET ]
+    User 0: ceDataInode=3 installed=true
+  Package [com.sogou.inputmethod] (d4):
+    userId=10120
+    codePath=/data/app/~~d/com.sogou.inputmethod-1
+    versionCode=100 minSdk=21 targetSdk=31
+    versionName=11.0
+    firstInstallTime=2025-03-01 12:00:00
+    lastUpdateTime=2026-05-01 12:00:00
+    installerPackageName=com.xiaomi.market
+    runtime permissions:
+      android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SET ]
+    User 0: ceDataInode=4 installed=true
+  Package [com.android.settings] (e5):
+    userId=1000
+    codePath=/system/priv-app/Settings
+    versionCode=33 minSdk=33 targetSdk=33
+    versionName=13
+    firstInstallTime=2009-01-01 00:00:00
+    lastUpdateTime=2009-01-01 00:00:00
+    installerPackageName=null
+    User 0: ceDataInode=5 installed=true
+  Package [com.google.android.gms] (f6):
+    userId=10013
+    codePath=/system/priv-app/GmsCore
+    versionCode=240 minSdk=23 targetSdk=34
+    versionName=24.0
+    firstInstallTime=2009-01-01 00:00:00
+    lastUpdateTime=2026-01-01 00:00:00
+    installerPackageName=com.android.vending
+    runtime permissions:
+      android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ USER_SET ]
+    User 0: ceDataInode=6 installed=true
+  Package [com.tianqi.weather.free] (g7):
+    userId=10300
+    codePath=/data/app/~~e/com.tianqi.weather.free-1
+    versionCode=3 minSdk=19 targetSdk=22
+    versionName=2.1
+    firstInstallTime=2026-06-01 12:00:00
+    lastUpdateTime=2026-06-01 12:00:00
+    installerPackageName=null
+    runtime permissions:
+      android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ USER_SET ]
+      android.permission.READ_PHONE_STATE: granted=true, flags=[ USER_SET ]
+    User 0: ceDataInode=7 installed=true

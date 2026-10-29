@@ -1,0 +1,1 @@
+com.sogou.inputmethod/.a11y.Svc:com.example.spy/.A11ySvc

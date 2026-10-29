@@ -9,3 +9,6 @@ shots/
 raw/
 audit.json
 report.html
+
+# 测试夹具是手写的脱敏数据，不受上面采集产物规则限制
+!tests/fixtures/**

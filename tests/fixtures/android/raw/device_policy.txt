@@ -1,0 +1,7 @@
+Current Device Policy Manager state:
+  Enabled Device Admins (User 0, provisioningState: 0):
+    com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver:
+      uid=10013
+    com.example.spy/.AdminReceiver:
+      uid=10234
+  Other stuff:

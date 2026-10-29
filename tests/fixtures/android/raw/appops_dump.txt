@@ -1,0 +1,12 @@
+Current AppOps Service state:
+  Uid u0a101:
+    Package [com.tencent.mm]:
+      SYSTEM_ALERT_WINDOW (allow):
+        Access: [fg-s] 2026-10-01
+  Uid u0a234:
+    Package [com.example.spy]:
+      SYSTEM_ALERT_WINDOW (allow):
+      ACCESS_FINE_LOCATION (allow):
+  Uid u0a235:
+    Package [com.fake.systemservice]:
+      SYSTEM_ALERT_WINDOW (ignore):
