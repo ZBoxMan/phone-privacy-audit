@@ -19,6 +19,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _console
 from collect_common import as_text
 
 HERE = Path(__file__).resolve().parent
@@ -115,11 +116,12 @@ def read_audit(out_dir):
 
 
 def main():
-    # 子进程的输出是直接写终端的，本进程的 print 默认带缓冲，
+    # 子进程的输出直接写终端，本进程的 print 默认带缓冲。
     # 不关掉的话「认出来了：iPhone」会跑到采集结果后面去。
+    _console.setup()
     try:
         sys.stdout.reconfigure(line_buffering=True)
-    except Exception:
+    except (AttributeError, ValueError):
         pass
 
     ap = argparse.ArgumentParser(

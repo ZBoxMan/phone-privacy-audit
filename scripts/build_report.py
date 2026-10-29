@@ -5,11 +5,14 @@ import json
 import sys
 from pathlib import Path
 
+import _console
+
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "assets" / "report.template.html"
 
 
 def main():
+    _console.setup()
     if len(sys.argv) < 2:
         print("用法: build_report.py <采集目录> [输出文件]", file=sys.stderr)
         return 2

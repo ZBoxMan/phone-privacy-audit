@@ -14,6 +14,8 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import _console
+
 SHOT_EXT = (".png",)
 PHOTO_EXT = (".jpg", ".jpeg", ".heic")
 
@@ -122,4 +124,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    _console.setup()
     sys.exit(asyncio.run(main()))

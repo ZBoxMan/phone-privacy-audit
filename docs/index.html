@@ -548,7 +548,7 @@ footer b{color:var(--muted);font-weight:600}
         <b>先把代码拿到手</b>
         <span>国内网络直接下 zip，解压就能用，不用 git clone</span>
       </div>
-      <a class="p" href="https://phone-checkup.app.workbuddy.host/phone-privacy-audit.zip?sharecode=5HBPD2YF6U">下载 zip</a>
+      <a class="p" href="https://github.com/ZBoxMan/phone-privacy-audit/releases/latest" id="dl-zip">下载 zip</a>
       <a class="s" href="https://github.com/ZBoxMan/phone-privacy-audit" target="_blank" rel="noopener">GitHub 仓库</a>
     </div>
 
@@ -1090,6 +1090,44 @@ footer b{color:var(--muted);font-weight:600}
       if (!u.searchParams.get('sharecode')) u.searchParams.set('sharecode', code);
       a.setAttribute('href', u.pathname + u.search + u.hash);
     } catch (e) {}
+  });
+})();
+</script>
+
+<script>
+/* 压缩包：平台的网关不放行 .zip 直链（403），所以仓库里放一份 base64 文本，
+   点下载时在前端还原成 zip。取不到（比如在 GitHub Pages 上）就放行到 Release。 */
+(function () {
+  var btn = document.getElementById('dl-zip');
+  if (!btn) return;
+  btn.addEventListener('click', function (e) {
+    if (btn.dataset.busy) { e.preventDefault(); return; }
+    e.preventDefault();
+    btn.dataset.busy = '1';
+    var label = btn.textContent;
+    btn.textContent = '准备中…';
+    fetch('phone-privacy-audit-source.txt' + (location.search || ''))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (txt) {
+        var bin = atob(txt.replace(/\s+/g, ''));
+        var buf = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { buf[i] = bin.charCodeAt(i); }
+        var url = URL.createObjectURL(new Blob([buf], { type: 'application/zip' }));
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'phone-privacy-audit.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+        btn.textContent = label;
+        delete btn.dataset.busy;
+      })
+      .catch(function () {
+        btn.textContent = label;
+        delete btn.dataset.busy;
+        location.href = 'https://github.com/ZBoxMan/phone-privacy-audit/releases/latest';
+      });
   });
 })();
 </script>

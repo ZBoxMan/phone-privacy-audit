@@ -9,7 +9,9 @@
 
 import sys
 
+import _console
 from phoneaudit.pipeline import main
 
 if __name__ == "__main__":
+    _console.setup()
     sys.exit(main())

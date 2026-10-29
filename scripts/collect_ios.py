@@ -28,6 +28,8 @@ from phoneaudit import MANUAL_ITEMS
 from phoneaudit.ios import classify, read_background, read_perms
 from phoneaudit.vocab import KNOWN_APPS, MODEL_NAMES, PRIVATE_PERMS
 
+import _console
+
 VPN_ENTITLEMENTS = ("com.apple.developer.networking.vpn.api",
                     "com.apple.developer.networking.networkextension")
 
@@ -156,4 +158,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    _console.setup()
     sys.exit(asyncio.run(main()))

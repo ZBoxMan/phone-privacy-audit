@@ -16,6 +16,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import _console  # noqa: E402
+
 from collect_common import (  # noqa: E402
     Collector, _run, as_text, die, find_tool, tool_version, write_manifest,
 )
@@ -117,4 +119,5 @@ def main():
 
 
 if __name__ == "__main__":
+    _console.setup()
     sys.exit(main())

@@ -8,7 +8,7 @@ macOS、Linux、Windows 都能跑，同一份代码、同一条命令。
 
 > 只诊断，不代劳。不卸载、不改设置、不替你点任何按钮。
 
-![安卓报告](docs/img/report-android.png)
+![安卓报告](docs/img/report-android.jpg)
 
 ---
 
@@ -115,13 +115,13 @@ python3 -m venv .venv
 
 GitHub 有时候打不开。三条备选，按顺手程度排：
 
-1. **直接下压缩包**（最快，国内可直连）：
-   <https://phone-checkup.app.workbuddy.host/phone-privacy-audit.zip?sharecode=5HBPD2YF6U>
-   解压出来就是完整仓库，不用 git，也不用配代理。
-2. **Release 包**：<https://github.com/ZBoxMan/phone-privacy-audit/releases/latest>
-   和上面同一份东西，走 GitHub 的 CDN，有时反而比 clone 稳。
-3. **先看再下**：<https://phone-checkup.app.workbuddy.host/?sharecode=5HBPD2YF6U>
-   说明页加两份脱敏样例报告，不插线就能看报告长什么样。
+1. **说明页上直接下**（国内可直连）：
+   <https://phone-checkup.app.workbuddy.host/?sharecode=5HBPD2YF6U>
+   点「下载 zip」，拿到的是完整仓库压缩包，解压就能用，不用 git、不用代理。
+   （托管方网关不放行 `.zip` 直链，所以那个按钮是页面里现拼出来的，慢一两秒正常。）
+2. **GitHub Release**：<https://github.com/ZBoxMan/phone-privacy-audit/releases/latest>
+   和上面同一份东西，走 GitHub 的 CDN。
+3. **先看再下**：同一个说明页里有两份脱敏样例报告，不插线就能看报告长什么样。
 
 pip 装 `pymobiledevice3` 慢的话换国内镜像：
 
@@ -129,7 +129,7 @@ pip 装 `pymobiledevice3` 慢的话换国内镜像：
 .venv/bin/pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-想有个 Gitee 镜像是可以的——Gitee 支持从 GitHub 一键导入仓库，导入后在设置里打开「强制同步」，但**别把导入的仓库当主仓**，改动还在 GitHub 这边发。
+想要 Gitee 镜像也行——Gitee 支持从 GitHub 一键导入，导入后打开「强制同步」，但**别把导入的仓库当主仓**，改动还在 GitHub 这边发。
 
 ## iPhone 那三项，机器读不到
 
@@ -181,7 +181,7 @@ iOS 的沙箱决定了：能自动读到的是**它声明要什么**，不是你
 
 报告里每个可疑软件占一张卡片，卡片上一排小方块，一个方块就是它能干的一件事。
 
-![iPhone 核对](docs/img/report-ios.png)
+![iPhone 核对](docs/img/report-ios.jpg)
 
 ## 当作 AI agent 技能用
 

@@ -13,6 +13,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import _console
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -45,4 +47,5 @@ def main():
 
 
 if __name__ == "__main__":
+    _console.setup()
     main()
