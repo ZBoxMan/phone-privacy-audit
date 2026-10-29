@@ -11,7 +11,14 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"
-PY="$ROOT/.venv/bin/python"
+
+# iPhone 采集要 venv 里的 pymobiledevice3；安卓/鸿蒙的分析和出报告系统 python3 就够
+VENV_PY="$ROOT/.venv/bin/python"
+if [ -x "$VENV_PY" ]; then PY="$VENV_PY"; else PY="$(command -v python3 || true)"; fi
+if [ -z "$PY" ]; then
+  echo "没找到 python3。安卓/鸿蒙装一个 python3 就行；iPhone 还要按 README 建 .venv。" >&2
+  exit 2
+fi
 
 OUT="./phone-audit"
 REBUILD=0
@@ -31,8 +38,8 @@ hr()  { printf '%s\n' "───────────────────
 
 # ── 认手机 ──────────────────────────────────────────────
 ios_connected() {
-  [ -x "$PY" ] || return 1
-  "$PY" -m pymobiledevice3 usbmux list 2>/dev/null | grep -q '"Identifier"'
+  [ -x "$VENV_PY" ] || return 1
+  "$VENV_PY" -m pymobiledevice3 usbmux list 2>/dev/null | grep -q '"Identifier"'
 }
 
 android_connected() {
@@ -68,7 +75,7 @@ if [ "$REBUILD" -eq 0 ]; then
     ios)
       say "认出来了：iPhone"
       hr
-      "$PY" "$HERE/collect_ios.py" "$OUT" || exit $?
+      "$VENV_PY" "$HERE/collect_ios.py" "$OUT" || exit $?
       ;;
     android)
       say "认出来了：安卓 / 鸿蒙"

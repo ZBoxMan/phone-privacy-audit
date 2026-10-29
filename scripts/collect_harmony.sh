@@ -16,12 +16,10 @@ mkdir -p "$OUT/raw"
 mark_platform() {
   python3 - "$OUT" "$1" <<'PY'
 import json, sys, pathlib
-out = pathlib.Path(sys.argv[1])
-layer = sys.argv[2]
-p = out / "manifest.json"
+p = pathlib.Path(sys.argv[1]) / "manifest.json"
 m = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 m["platform"] = "harmony"
-m["harmony_layer"] = layer
+m["harmony_layer"] = sys.argv[2]
 p.write_text(json.dumps(m, ensure_ascii=False, indent=2), encoding="utf-8")
 PY
 }
@@ -76,18 +74,9 @@ grab prop_fingerprint  param get const.product.name
 grab bundles           bm dump -a
 grab running           aa dump -a
 
-# 鸿蒙 NEXT 上 bm dump 单个包的开销很大，只对数量做统计，不逐个拉详情
-{
-  echo "{"
-  echo "  \"platform\": \"harmony\","
-  echo "  \"harmony_layer\": \"next\","
-  echo "  \"serial\": \"$(hdc list targets 2>/dev/null | head -1)\","
-  echo "  \"collected_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\","
-  echo "  \"ok\": [$(printf '"%s",' "${OK[@]}" | sed 's/,$//')],"
-  echo "  \"failed\": [$(printf '"%s",' "${FAIL[@]}" | sed 's/,$//')]"
-  echo "}"
-} > "$OUT/manifest.json"
-
-echo "采集完成: $OUT"
-echo "成功 $(( ${#OK[@]} )) 项 / 失败 $(( ${#FAIL[@]} )) 项"
+# 鸿蒙 NEXT 上 bm dump 单个包的开销很大，只拉清单，不逐个拉详情
+python3 "$DIR/write_manifest.py" "$OUT" --platform harmony --harmony-layer next \
+  --serial "$(hdc list targets 2>/dev/null | head -1)" \
+  --tool "$(hdc -v 2>/dev/null | head -1)" \
+  --ok "${OK[*]+${OK[*]}}" --failed "${FAIL[*]+${FAIL[*]}}"
 echo "提示：纯血鸿蒙能读到的信息有限，报告会以手工核对为主。"

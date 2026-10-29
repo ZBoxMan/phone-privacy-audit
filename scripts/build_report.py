@@ -23,7 +23,8 @@ def main():
     data = json.loads(audit_path.read_text(encoding="utf-8"))
     html = TEMPLATE.read_text(encoding="utf-8")
 
-    payload = json.dumps(data, ensure_ascii=False, default=str).replace("</", "<\\/")
+    # 数据里任何 "<" 都转成 \u003c：JSON 和 JS 都认，</script> 和 <!-- 就截不断脚本
+    payload = json.dumps(data, ensure_ascii=False, default=str).replace("<", "\\u003c")
     html = html.replace("__DATA__", payload)
 
     target = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else out_dir / "report.html"

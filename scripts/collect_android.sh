@@ -4,7 +4,7 @@
 # 本脚本不包含任何 uninstall、disable、set、put、clear、force-stop 命令。
 #
 # 用法:
-#   ./collect.sh [输出目录] [设备序列号]
+#   bash collect_android.sh [输出目录] [设备序列号]
 # 输出:
 #   <输出目录>/raw/*.txt        原始输出
 #   <输出目录>/manifest.json    采集清单与完整度
@@ -12,6 +12,7 @@
 set -uo pipefail
 
 OUT="${1:-android-audit-$(date +%Y%m%d-%H%M%S)}"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$OUT/raw"
 
 if ! command -v adb >/dev/null 2>&1; then
@@ -57,7 +58,7 @@ grab prop_model        getprop ro.product.model
 grab prop_manufacturer getprop ro.product.manufacturer
 grab prop_release      getprop ro.build.version.release
 grab prop_sdk          getprop ro.build.version.sdk
-grab prop_security     getprop ro.build.version.security_patch
+grab prop_security_patch getprop ro.build.version.security_patch
 grab prop_fingerprint  getprop ro.build.fingerprint
 grab prop_serial       getprop ro.serialno
 grab users             pm list users
@@ -92,18 +93,7 @@ grab net_udp6          cat /proc/net/udp6
 grab proxy             settings get global http_proxy
 
 # ---------- 清单 ----------
-{
-  echo "{"
-  echo "  \"serial\": \"$SERIAL\","
-  echo "  \"collected_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\","
-  echo "  \"adb_version\": \"$(adb version 2>/dev/null | head -1 | sed 's/"/\\"/g')\","
-  echo "  \"ok\": [$(printf '"%s",' "${OK[@]}" | sed 's/,$//')],"
-  echo "  \"failed\": [$(printf '"%s",' "${FAIL[@]}" | sed 's/,$//')]"
-  echo "}"
-} > "$OUT/manifest.json"
-
-echo "采集完成: $OUT"
-echo "成功 $(( ${#OK[@]} )) 项 / 失败 $(( ${#FAIL[@]} )) 项"
-if [ ${#FAIL[@]} -gt 0 ]; then
-  echo "失败项: ${FAIL[*]}"
-fi
+# ${X[*]+${X[*]}}：bash 3.2 + set -u 下空数组直接展开会报 unbound variable
+python3 "$DIR/write_manifest.py" "$OUT" --platform android --serial "$SERIAL" \
+  --tool "$(adb version 2>/dev/null | head -1)" \
+  --ok "${OK[*]+${OK[*]}}" --failed "${FAIL[*]+${FAIL[*]}}"

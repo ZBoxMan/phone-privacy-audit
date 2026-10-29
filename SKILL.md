@@ -93,7 +93,7 @@ cd ~/.workbuddy/skills/phone-privacy-audit
 bash scripts/run.sh ./phone-audit
 ```
 
-这一条命令会自己认手机（iPhone / 安卓 / 鸿蒙）、采集、分析、出报告。20–60 秒，不用用户记任何命令。
+这一条命令会自己认手机（iPhone / 安卓 / 鸿蒙）、采集、分析、出报告。20–60 秒，不用用户记任何命令。安卓/鸿蒙不需要 `.venv`，系统 `python3` 就够；只有 iPhone 采集要 venv 里的 `pymobiledevice3`。
 
 认不出手机时它会直接告诉用户去哪儿点「信任」或开「USB 调试」，把那段话转给用户就行。
 
@@ -244,8 +244,7 @@ python3 scripts/build_report.py ./phone-audit
 |---|---|
 | `references/rules.md` | 评分口径，回答"凭什么这么判" |
 | `references/guidebook.md` | 安卓各厂商的实际操作路径 |
-| `references/checkpoints.md` | iPhone 的人工核对清单（详细版，含每项的风险说明） |
-| `references/manual-items.json` | iPhone 核对项的数据模板 |
+| `references/manual-items.json` | iPhone 人工核对项：标题、风险说明、怎么办的唯一来源 |
 | `references/audit-prompts.md` | 补充排查用的提示词 |
 
 ## 局限，必须主动讲

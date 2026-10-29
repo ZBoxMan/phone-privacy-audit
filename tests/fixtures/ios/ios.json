@@ -1,0 +1,248 @@
+{
+ "platform": "ios",
+ "device": {
+  "brand": "Apple",
+  "model": "iPhone 15",
+  "product_type": "iPhone15,4",
+  "os": "iOS 18.1",
+  "security_patch": "",
+  "scanned_at": "2026-10-29T09:40:00Z",
+  "device_name": "Box 的 iPhone",
+  "udid": "X"
+ },
+ "apps": [
+  {
+   "bundle_id": "com.tencent.xin",
+   "name": "微信",
+   "version": "1.0",
+   "app_type": "User",
+   "source": "App Store",
+   "suspicious_signer": false,
+   "is_store": true,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [
+    "相机",
+    "麦克风",
+    "通讯录",
+    "位置",
+    "相册",
+    "蓝牙",
+    "同 WiFi 下的其他设备",
+    "面容 ID",
+    "存照片",
+    "音乐库",
+    "日历",
+    "语音识别",
+    "运动与健身"
+   ],
+   "perm_why": {
+    "相机": "需要",
+    "麦克风": "需要",
+    "通讯录": "需要",
+    "位置": "需要",
+    "相册": "需要",
+    "蓝牙": "需要",
+    "同 WiFi 下的其他设备": "需要",
+    "面容 ID": "需要",
+    "存照片": "需要",
+    "音乐库": "需要",
+    "日历": "需要",
+    "语音识别": "需要",
+    "运动与健身": "需要"
+   },
+   "private_perms": [
+    "相机",
+    "麦克风",
+    "通讯录",
+    "位置",
+    "相册",
+    "音乐库",
+    "日历",
+    "语音识别",
+    "运动与健身"
+   ],
+   "background": [
+    "后台放声音",
+    "后台接网络电话",
+    "收推送后台醒来"
+   ],
+   "queries_count": 80,
+   "has_vpn": false,
+   "team": "T1"
+  },
+  {
+   "bundle_id": "com.evil.tracker",
+   "name": "",
+   "version": "1.0",
+   "app_type": "User",
+   "source": "来源不明（不在 App Store）",
+   "suspicious_signer": true,
+   "is_store": false,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [
+    "位置",
+    "一直知道位置",
+    "麦克风",
+    "相机",
+    "通讯录",
+    "相册",
+    "健康数据",
+    "日历",
+    "提醒事项",
+    "运动与健身"
+   ],
+   "perm_why": {
+    "位置": "需要",
+    "一直知道位置": "需要",
+    "麦克风": "需要",
+    "相机": "需要",
+    "通讯录": "需要",
+    "相册": "需要",
+    "健康数据": "需要",
+    "日历": "需要",
+    "提醒事项": "需要",
+    "运动与健身": "需要"
+   },
+   "private_perms": [
+    "位置",
+    "一直知道位置",
+    "麦克风",
+    "相机",
+    "通讯录",
+    "相册",
+    "健康数据",
+    "日历",
+    "提醒事项",
+    "运动与健身"
+   ],
+   "background": [
+    "后台知道位置",
+    "后台放声音"
+   ],
+   "queries_count": 5,
+   "has_vpn": false,
+   "team": "T1"
+  },
+  {
+   "bundle_id": "com.liguangming.Shadowrocket",
+   "name": "Shadowrocket",
+   "version": "1.0",
+   "app_type": "User",
+   "source": "App Store",
+   "suspicious_signer": false,
+   "is_store": true,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [
+    "同 WiFi 下的其他设备"
+   ],
+   "perm_why": {
+    "同 WiFi 下的其他设备": "需要"
+   },
+   "private_perms": [],
+   "background": [],
+   "queries_count": 0,
+   "has_vpn": true,
+   "team": "T1"
+  },
+  {
+   "bundle_id": "com.beta.app",
+   "name": "测试软件",
+   "version": "1.0",
+   "app_type": "User",
+   "source": "TestFlight 测试版",
+   "suspicious_signer": false,
+   "is_store": false,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [
+    "相机"
+   ],
+   "perm_why": {
+    "相机": "需要"
+   },
+   "private_perms": [
+    "相机"
+   ],
+   "background": [],
+   "queries_count": 0,
+   "has_vpn": false,
+   "team": "T1"
+  },
+  {
+   "bundle_id": "com.apple.mobilesafari",
+   "name": "Safari",
+   "version": "1.0",
+   "app_type": "System",
+   "source": "App Store",
+   "suspicious_signer": false,
+   "is_store": true,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [],
+   "perm_why": {},
+   "private_perms": [],
+   "background": [],
+   "queries_count": 0,
+   "has_vpn": false,
+   "team": "T1"
+  },
+  {
+   "bundle_id": "com.autonavi.amap",
+   "name": "高德地图",
+   "version": "1.0",
+   "app_type": "User",
+   "source": "App Store",
+   "suspicious_signer": false,
+   "is_store": true,
+   "hidden": false,
+   "is_clip": false,
+   "perms": [
+    "位置",
+    "一直知道位置",
+    "麦克风",
+    "相机",
+    "相册",
+    "通讯录",
+    "日历",
+    "运动与健身",
+    "蓝牙"
+   ],
+   "perm_why": {
+    "位置": "需要",
+    "一直知道位置": "需要",
+    "麦克风": "需要",
+    "相机": "需要",
+    "相册": "需要",
+    "通讯录": "需要",
+    "日历": "需要",
+    "运动与健身": "需要",
+    "蓝牙": "需要"
+   },
+   "private_perms": [
+    "位置",
+    "一直知道位置",
+    "麦克风",
+    "相机",
+    "相册",
+    "通讯录",
+    "日历",
+    "运动与健身"
+   ],
+   "background": [
+    "后台知道位置",
+    "后台放声音"
+   ],
+   "queries_count": 70,
+   "has_vpn": false,
+   "team": "T1"
+  }
+ ],
+ "coverage": {
+  "ok": 2,
+  "failed": 0,
+  "failed_nice": []
+ }
+}

@@ -1,0 +1,31 @@
+{
+  "serial": "TEST0001",
+  "collected_at": "2026-10-29T09:40:00Z",
+  "adb_version": "test",
+  "ok": [
+    "prop_brand",
+    "prop_model",
+    "prop_manufacturer",
+    "prop_release",
+    "prop_sdk",
+    "prop_security_patch",
+    "packages_all",
+    "packages_system",
+    "launcher_entries",
+    "boot_receivers",
+    "admins_apps",
+    "default_input",
+    "accessibility",
+    "notif_listeners",
+    "deviceidle",
+    "device_policy",
+    "appops_dump",
+    "net_tcp",
+    "net_tcp6",
+    "net_udp",
+    "package_dump"
+  ],
+  "failed": [
+    "net_udp6:empty"
+  ]
+}

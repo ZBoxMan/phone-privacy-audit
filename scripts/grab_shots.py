@@ -7,7 +7,9 @@
 iPhone 的截图默认存成 PNG，相片是 JPG/HEIC，所以按后缀就能把截图挑出来。
 """
 
+import argparse
 import asyncio
+import json
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -68,21 +70,20 @@ async def collect(lockdown, since, limit):
 
 
 async def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    opts = {}
-    for i, a in enumerate(sys.argv):
-        if a.startswith("--") and i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
-            opts[a[2:]] = sys.argv[i + 1]
+    ap = argparse.ArgumentParser(description="从 iPhone 相册只读拉取最近的截图")
+    ap.add_argument("out_dir", nargs="?", default="./shots")
+    ap.add_argument("--minutes", type=int, default=180, help="只要最近多少分钟内的截图")
+    ap.add_argument("--max", type=int, default=6, help="最多拉几张")
+    args = ap.parse_args()
 
-    out_dir = Path(args[0] if args else "./shots").resolve()
+    out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    minutes = int(opts.get("minutes", 180))
-    limit = int(opts.get("max", 6))
 
     try:
         from pymobiledevice3.lockdown import create_using_usbmux
     except ImportError:
-        print("ERROR: 缺少 pymobiledevice3，请用 skill 目录下的 venv 运行", file=sys.stderr)
+        print("ERROR: 缺少 pymobiledevice3，请用仓库里的 venv 运行：.venv/bin/python scripts/grab_shots.py",
+              file=sys.stderr)
         return 2
 
     try:
@@ -92,11 +93,11 @@ async def main():
         print("请确认数据线连着、手机解锁了、屏幕点了「信任」。", file=sys.stderr)
         return 3
 
-    since = datetime.now() - timedelta(minutes=minutes)
-    shots = await collect(lockdown, since, limit)
+    since = datetime.now() - timedelta(minutes=args.minutes)
+    shots = await collect(lockdown, since, args.max)
 
     if not shots:
-        print(f"最近 {minutes} 分钟里没找到新截图。")
+        print(f"最近 {args.minutes} 分钟里没找到新截图。")
         print("在手机上截完图，再跑一次这个脚本就行。")
         return 0
 
@@ -111,7 +112,6 @@ async def main():
             "kb": round(s["size"] / 1024),
         })
 
-    import json
     (out_dir / "shots.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
 

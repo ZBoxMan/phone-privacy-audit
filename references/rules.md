@@ -1,6 +1,6 @@
 # 评分口径
 
-回答用户"凭什么这么判"时查这张表。规则 ID 与 `scripts/analyze.py` 一一对应。
+回答用户"凭什么这么判"时查这张表。规则 ID 与 `scripts/phoneaudit/android.py`、`scripts/phoneaudit/ios.py` 一一对应，权重和分档在 `scripts/phoneaudit/scoring.py`。
 
 ## 三条前提
 

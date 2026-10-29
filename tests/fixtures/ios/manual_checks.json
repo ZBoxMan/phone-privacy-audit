@@ -1,0 +1,35 @@
+[
+ {
+  "id": "profile",
+  "answer": "no"
+ },
+ {
+  "id": "appleid",
+  "answer": "yes",
+  "note": "列表里有一台不认识的 iPad。"
+ },
+ {
+  "id": "location_share",
+  "answer": ""
+ },
+ {
+  "id": "keyboard",
+  "answer": ""
+ },
+ {
+  "id": "screentime",
+  "answer": ""
+ },
+ {
+  "id": "location_perm",
+  "answer": ""
+ },
+ {
+  "id": "vpn",
+  "answer": ""
+ },
+ {
+  "id": "shortcut",
+  "answer": ""
+ }
+]

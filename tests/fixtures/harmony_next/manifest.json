@@ -1,0 +1,17 @@
+{
+  "platform": "harmony",
+  "harmony_layer": "next",
+  "serial": "HW1",
+  "collected_at": "2026-10-29T09:40:00Z",
+  "ok": [
+    "prop_brand",
+    "prop_model",
+    "prop_release",
+    "prop_sdk",
+    "prop_fingerprint",
+    "bundles"
+  ],
+  "failed": [
+    "running:empty"
+  ]
+}

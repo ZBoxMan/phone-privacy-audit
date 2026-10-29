@@ -41,7 +41,7 @@
 git clone https://github.com/ZBoxMan/phone-privacy-audit.git
 cd phone-privacy-audit
 
-# iPhone 需要这一步，安卓/鸿蒙可以跳过
+# iPhone 需要这一步，安卓/鸿蒙可以跳过（有系统自带的 python3 就够）
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
@@ -170,21 +170,40 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ├── SKILL.md                    技能定义：规矩、分寸、话术
 ├── scripts/
 │   ├── run.sh                  一条命令跑完（自动认机型）
-│   ├── collect_android.sh      adb,约 30 个只读数据源
-│   ├── collect_harmony.sh      hdc,纯血鸿蒙走这条
-│   ├── collect_ios.py          pymobiledevice3,async
+│   ├── collect_android.sh      adb，约 30 个只读数据源
+│   ├── collect_harmony.sh      hdc，纯血鸿蒙走这条
+│   ├── collect_ios.py          pymobiledevice3，async
 │   ├── grab_shots.py           从相册只读拉截图（iPhone 核对用）
-│   ├── analyze.py              13 条规则 + 加权 + 结论文案
+│   ├── write_manifest.py       采集脚本收尾写 manifest.json
+│   ├── analyze.py              规则引擎入口
+│   ├── phoneaudit/             规则引擎本体
+│   │   ├── vocab.py            词表：包名 → 人话、可信来源、敏感权限
+│   │   ├── scoring.py          计分与分档
+│   │   ├── android.py          安卓/鸿蒙（AOSP）解析 + 13 条规则
+│   │   ├── ios.py              iPhone 来源判定 + 8 条规则
+│   │   ├── harmony.py          纯血鸿蒙（只有清单）
+│   │   ├── verdict.py          一句话结论
+│   │   └── pipeline.py         主流程，写 audit.json
 │   └── build_report.py         模板 + 数据 → 自包含 HTML
 ├── assets/report.template.html 报告模板（内联 SVG，零外部请求）
 ├── references/
 │   ├── rules.md                评分口径、规则表、禁用表述
 │   ├── guidebook.md            各厂商设置路径
-│   ├── checkpoints.md          iPhone 人工核对详细版
-│   ├── manual-items.json       核对项数据模板
+│   ├── manual-items.json       iPhone 人工核对项（文案唯一来源）
 │   └── audit-prompts.md        补充排查提示词
+├── tests/                      规则引擎回归测试 + 三套脱敏采集夹具
 └── docs/                       样例报告与说明页
 ```
+
+## 开发
+
+规则引擎不碰设备，用 `tests/fixtures/` 里的采集结果就能跑：
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+改了规则或词表，先跑这一条。夹具是手写的脱敏数据，不含任何真实设备信息。
 
 ## 隐私
 
